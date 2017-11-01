@@ -1,0 +1,968 @@
+• ### 第一章
+    • 习惯使用linux
+        • 浏览器 => Chrome, firefox
+        • office => OpenOffice, 永中office, WPS
+        • 聊天 => webQQ
+        • 播放器 => MPlayer
+        • PS => GIMP
+    • Linux发行版
+        • RedHat
+            • RedHat Enterprise Linux => RHEL(付费) => CentOS(免费)
+        • Slackware
+            • SUSE Linux Enterprise => SUSE
+        • Debian
+            • Ubuntu Server => Ubuntu
+    • Linux图形界面
+        • X协议=>xorg实现协议的软件(X服务器)=>X客户端->Window Manager(WM)一类软件
+        • >startx => 启动xorg和默认的WM(GNOME的Metacity,KDE的KWin)
+        • Display Manager(DM) -> 负责图形界面的用户登录(KDM, GDM)
+        • Mac的X协议是二进制的，Linux的X协议是纯文本的
+        • 主流桌面环境(Linux图形界面四杰)：GNOME, KDE, XECE, LXDE
+        • 桌面环境是一套软件的集合，包括WM, DM, 应用框架库等
+    • Linux基础命令
+        • 目录和文件处理
+            • mkdir [$option] $dir
+            • ls [$option] [$file]
+            • cd [$dir]
+            • pwd
+            • cp [$option] $dest
+            • mv [$option] $dest
+            • rm [$option] $file
+        • 文本处理
+            • cat [$option] [$file1] [$file2] ...
+            • more [$option] $file
+            • less [$option] $file
+            • head [$option] $file
+            • tail [$option] $file
+            • echo [$option] $string
+        • 系统管理
+            • ps [$option]
+            • kill [$option]
+            • jobs
+            • bg [jobId]
+            • fg [jobId]
+        • 文件系统
+            • du [$option] [$file]
+                • -s(summarize)
+                • -h(human-readable)
+            • df [$option] [$file]
+    • 终端快捷键
+        • <Ctrl>a | 光标至行首
+        • <Ctrl>e | 光标至行尾
+        • <Ctrl>f | 光标右移一个字符
+        • <Ctrl>b | 光标左移一个字符
+        • <Ctrl>d | 删除光标后的一个字符
+        • <Ctrl>k | 删除光标后的所有字符
+        • <Ctrl>u | 删除整行字符
+        • <Ctrl>p | 上一条命令
+        • <Ctrl>n | 下一条命令
+    • 多命令执行
+        • $cmd1; $cmd2; $cmd3 | 无论结果如何都依次执行
+        • $cmd1 && $cmd2 && $cmd3 | 执行成功才执行下一个命令
+        • $cmd1 || $cmd2 || $cmd3 | 执行失败才执行下一个命令
+    • 错误信息
+        • 命令名：执行内容：错误信息
+        • errno.h包含完整的基本错误代码列表
+    • 帮助信息
+        • man $cmd
+            • man -a $cmd 列出所有
+            • man 3 printf 列出库函数printf的帮助信息
+        • info $cmd
+        • $cmd --help
+        • /usr/share/doc目录下的README文件
+    • 致命的Linux命令
+        • rm -rf /
+        • :(){ :|:& }; | fork炸弹
+        • /etc/security/limits.conf文件中加入* hard nproc 200 | 限制用户的进程数为200，root不受影响
+• ### 第二章
+    • 多用户多任务分时操作系统
+        • 没有操作系统=>批处理操作系统=>分时系统
+        • 电气，麻省理工，贝尔实验室合伙的Multics项目=>由于太‘靠谱’而失败
+        • Multics的成员Ken Thompson和Dennis Ritchie为了电脑游戏开发了Unix(实用的多用户多任务分时操作系统)
+    • 用户身份
+        • root和非root
+        • 用来完成特定任务的用户：nobody, admin, ftp等
+        • nobody可以用于Nginx工作进程，没有密码，没有shell，没有home目录
+        • 还有一些用户没卵用，仅仅是为了兼容而占坑
+        • /etc/passwd | 查看用户
+            • 用户名:密码:UID:GID:用户全名:home目录:shell
+            • /etc/shadow | 存储用户密码
+        • /etc/group | 查看用户组
+            • 组名:用户组密码:GID:用户组内的用户名
+            • /etc/gshadow | 存储用户组密码
+            • 初始用户组 vs 支持用户组
+        • 管理用户和用户组
+            • sudo useradd $userName | 添加用户
+            • passwd [$userName] | 修改的密码，只有root权限才能指定用户名
+            • sudo usermod [$option] $userName | 修改用户基本信息，保证该用户没有正在执行任何程序
+                • -l | 修改用户账号名称
+                • -L | 锁定用户
+                • -U | 解除锁定
+            • sudo userdel $userName | 删除用户
+        • 管理用户组：groupadd, gpasswd, groupmod, groupdel
+    • sudo特权
+        • /etc/sodoers
+            • $userName $主机=[(切换到哪些用户或用户组)] [是否需要密码验证] 命令1,[(切换到哪些用户或用户组)] [是否需要密码验证] [命令2],[(切换到哪些用户或用户组)] [是否需要密码验证] [命令3]......
+            • $userName ALL=(ALL) ALL | 用户可以用sudo特权执行任何命令
+            • %$groupName ALL=(ALL) ALL
+            • %$groupName ALL=(ALL) NOPASSWD:ALL | 建议不要使用
+            • %$goupName ALL=/sbin/mount /mnt/cdrom, /sbin/umount /mnt/cdrom
+            • %$groupName ALL=(ALL) ALL,!/user/sbin/adduser, !/usr/sbin/useradd
+        • su $userName [-] | 切换用户，加入-参数则跳转至目标用户home目录
+            • 需要目标用户的密码(root用户不用)
+            • sudo su $userName 可以用自己密码切换至任意用户，应该禁止
+        • whoami(有效用户EUID), who am i(实际用户UID), who(实际用户)
+            • 实际用户为登录时的用户，不会发生变化
+            • 有效用户为执行当前操作的用户
+    • 文件权限
+        • alias ls='ls --color=auto' | 命令别名,可添加至/etc/bashrc或者/home/user/.bashrc
+        • -rwxrwxrwx
+            • 第一个字符为文件类型
+                • -为普通文件
+                • d为目录
+                • l为软/硬链接
+                • b为块设备(如磁盘)
+                • c为字符设备(如鼠标键盘)
+                • s为套接字文件
+                • p为命名管道文件
+            • 拥有者、所属用户组、其它用户的读、写、执行权限
+                • 目录 => x权限可以打开目录，r权限可以查看目录下文件列表，w权限可以创建文件
+                • 其它文件 => x可以执行文件，r权限可以读取，r和w可以编辑
+                • 隐藏文件在文件前加'.'
+    • 文件连接
+        • inode
+            • 每个文件都有一个唯一的inode编号
+            • inode就像一个指针，指向磁盘中的物理位置
+            • 访问过的文件inode会被缓存
+            • 连接数即为inode的总数
+        • 软连接
+            • ln -s $target $name
+            • 相当于快捷方式
+            • 与目标文件属性完全不同，占据一个inode，不影响inode计数
+            • 删除目标文件则失效
+        • 硬连接
+            • ln $target $name
+            • 属性与目标文件属性相同，引用相同的inode，并将inode引用计数+1
+            • 必须与目标文件在同一个磁盘分区
+            • 删除目标文件则inode计数-1
+    • 修改文件权限
+        • 操作文件的属性和权限必须具备文件的写权限或者root权限
+        • touch $file | 修改文件最后更新时间
+        • chown [-R] $userName[:$groupName] $fileName | 修改文件所属用户和用户组
+        • chmod 777/ugoa-rwx $fileName
+            • r=4, w=2, x=1 | 7(rwx), 5(rx), 4(r)
+            • u(user)、g(group)、o(other)、a(all)，默认为a
+            • +、-、=
+            • r、w、x
+                • s在拥有者x位置上(u+s)为SetUID，简称SUID(4)
+                    • 仅针对二进制程序
+                    • 执行者具有x权限，仅在执行过程中有效
+                    • 执行者将具有该程序拥有者的权限
+                    • 需要提供给普通用户，但又需要root权限才能执行的程序，su/passwd/mount等
+                • s在所属组x位置上(g+s)为SetGID，简称SGID(2)
+                    • 对象为文件
+                        • 对二进制程序有效
+                        • 执行者具有x权限
+                        • 执行过程中将获得该程序所属用户组的支持
+                        • 如locate命令
+                    • 对象为目录
+                        • 用户具有r与x权限能够进入此目录
+                        • 用户在此目录下的有效用户组变为该目录所属用户组
+                        • 用户具有w权限，创建的新文件用户组与此目录的用户组相同
+                • t位于其它用户的x位置上(o+t)，为Sticky Bit，简称SBIT(1)
+                    • 仅对目录有效
+                        • 用户在此目录下创建了文件或目录，仅root和自己可以删除
+                        • 如/tmp目录，任何人都可以创建文件，但是只有自己和root可以删除
+    • 文件的基本操作
+        • ls, cd, cp, rm, mv
+        • 特别的目录名
+            • '.' => 当前目录的硬连接，每个目录连接数至少为2
+            • '..' => 上级目录的硬连接，目录中每增加一个子目录，连接数+1
+            • '-' => cd的特殊参数，上一个工作目录
+            • '~' => cd的特殊参数，当前用户的home目录
+    • 搜索文件
+        • whereis $file
+            • /var/lib/mlocate/
+                • 系统创建，包含本地所有文件的信息，每天自动执行updatedb命令更新一次
+            • 所以whereis快，但是不准确，可以搜索前手动执行updatedb
+            • 功能有限：只能用于搜索可执行文件、联机帮助文件和源代码文件
+        • locate $file
+            • 和whereis使用相同的数据库
+            • 搜索结果更全面
+            • locate -b "\ls" | 列出所有文件名为ls的文件路径
+        • which $file
+            • 只在$PATH中指定的路径来搜索可执行文件的位置
+            • 一般用来确认是否安装了指定软件
+        • type $file
+            • 判断一个命令是否属于shell内置的
+        • find $file
+            • 最强大，从磁盘中搜索，效率差
+            • find / -mtime 3 | 查询三天前的那天所有发生变化的文件
+            • find / -mtime -3 | 查询三天内所有发生变化的文件
+            • find / -mtime +3 | 查询三天前所有发生变化的文件
+            • find / -mtime -1 -exec ls -l {} \;
+                • -exec $cmd
+                • {}为占位符，由find找到的文件名替换
+                • \;为转义, -exec的结束标记是';'，在shell中需要转义
+    • 打包压缩
+        • tar包
+            • *.tar.gz、*.tar.bz2、*.tar.xz，统称为tar包，不同后缀代表不同的压缩算法
+            • 压缩比：gz<bz2<xz
+            • 压缩速度：gz>bz2>xz
+            • tar -vxf $fileName | 解压缩所有类型的tar包，f一定要放在最后
+            • tar -zcvf $fileName.tar.gz $FILES
+            • tar -jcvf $fileName.tar.bz2 $FILES
+            • tar -Jcvf $fileName.tar.xz $FILES
+        • dump和restore
+        • cpio
+            • 标准输入传入文件名，输出到标准输出
+            • find ... | cpio -ocB > $filename | 打包
+            • cpio -idc < $filename | 解包
+    • 管道和重定向
+        • 执行程序：绝对路径、./$fileName
+        • find /boot | cpio -ocB > /tmp/boot.img
+            • '|' | 管道符，匿名管道，FIFO(First In First Out), 隐式重定向
+            • mkfifo $path | 在$path上创建一个类型为'p'的文件
+            • '>'、'<' | I/O重定向, 显示重定向
+            • find /boot | cpio -ocB | gzip -9 > /tmp/boot.img | 流式处理
+            • cpio -idc < /tmp/boot.img //未压缩
+            • gzip -dc /tmp/boot.img | cpio -idc //压缩过
+    • 前后台任务
+        • ctrl+Z | 当前任务切换至后台
+        • bg $taskNum| 前台任务切换至后台
+        • fg $taskNum| 后台任务切换至前台
+        • $cmd & | 直接创建后台任务
+        • jobs | 查看后台任务
+            • +为不带参数执行fg的默认任务
+        • ctrl+c | 结束前台任务
+        • kill -9 $processId/%$taskNum
+            • -9 => 信号，强制干掉一个不正常的任务或者进程
+            • 默认是-15，使程序正常退出
+            • 参数为进程ID或者$任务号
+        • nohup [$cmd $para] & | 脱离任务与终端的联系，所有输出会被输出到当前目录的nohump.out文件
+    • 计划任务
+        • at 10:00 tomorrow => at> /bin/echo 'hello world' => ctrl+d | 创建一次性任务，使用命令全路径
+        • ctrl+d | EOF, 代表键盘输入完毕, 一般使用重定向代替
+        • crontab
+            • -e | 编辑当前用户cron表
+            • -l | 查看当前用户的cron表
+            • -r | 删除当前用户的cron进程
+            • -u $userName | 以$userName身份来控制cron表
+        • cron表
+            • min(0-59) hour(0-23) day(0-31) month(1-12) week(0-6) [$userName] $cmd
+            • * => 任意时间
+            • , => 分隔不连续的时间点
+            • - => 连续的时间段，包括左右边界
+            • */n => 每隔单位之间
+        • 谁能添加由at.allow/at.deny/cron.allow/cron.deny来决定
+    • 守护进程(daemons)
+        • 长期存在，独立于终端并且周期性执行某种任务或者等待处理某些事件
+        • 伴随着Linux系统启动而启动，关闭而关闭
+        • 大多数服务器都是用守护进程来实现的
+        • 某些守护进程协助完成很多系统任务，如计划任务的atd/crond, 负责打印的lqd等
+        • ntsysv | 查看系统中拥有哪些守护进程
+        • 分为stand alone和xinetd两类
+        • stand alone
+            • 自行启动，不需要利用系统其它机制来管理
+            • 启动之后会一直占用内存和资源
+            • 响应最快，如apache、mysql等
+            • 放在/etc/init.d/目录中, /etc/init.d/atd start/stop/restart
+        • xinetd
+            • 由统一的一个stand alone守护进程(super daemon)负责唤起
+            • 赋予super daemon安全管控机制
+            • 客户端需求服务时被唤起，客户端联机结束时关闭
+            • 不能及时响应，不会一直占用系统资源
+            • 配置文件放置在/etc/xinetd.d/目录下(每个文件代表一个独立的xinetd守护进程)和/etc/xinetd.conf文件中
+            • 开启：'disable=no' => /etc/init.d/xinetd.d restart(重启daemon)
+            • 根据/etc/services文件，监听端口 => 判断对应服务的配置文件是否开启服务 => 开启服务
+    • 进程
+        • ps | 查看程序的静态信息
+            • ps aux | 查看系统中所有程序的数据
+                • USER PID %CPU %MEM VSZ RSS TTY STAT START TIME COMMAND
+                • ps aux | more //防止被终端截断
+            • ps ux | 查看当前用户所有程序的数据
+            • ps -l | 查看与当前终端关联的程序数据
+                • F S UID PID PPID C PRI NI ADDR SZ WCHAN TTY TIME CMD
+                • F(0/4/1)
+                • S(R/S/D/T/Z)
+        • top | 每隔5秒刷新一次
+            • 'top -' => 当前时间 'up' => 系统连续运行时间 'users' => 已登录系统的用户数 'load average' => 1/5/15分钟时的平均工作负载
+            • Tasks: 'total' => 进程总数 'running' => 正在运行数 'sleeping' => 睡眠数 'stopped' => 停止数 'zombie' => 僵尸数
+            • Cpu(s): '%us' => 用户空间占用 '%sy' => 内核空间占用 '%ni' => 改变过优先级的进程占用 '%id' => 空闲 '%wa' => I/O等待专用百分比 '%hi' => 硬中断占用 '%si' => 软中断占用 '%st' => 被强制等待虚拟CPU的时间
+            • Mem: 'total' => 物理内存总数 'used' => 已用数 'free' => 空闲数 'buffers' => 缓冲数
+            • Swap: 'total' => 交换的分区总数 'used' => 已用数 'free' => 空闲数 'cached' => 缓存数
+            • PID USER PR NI VIRT RES SHR S %CPU %MEM TIME+ COMMAND
+            • top -d 2 -p $PID
+            • P => 让单个进程信息按照CPU使用率排序
+            • M => 以内存的使用频率排序
+            • N => 以PID排序
+        • pstree | 查看进程的父子关系
+    • 软件安装
+        • 源码安装
+            • make clean/distclean | 去除上次编译过的目标文件(*.o)
+            • ./configure [$options] | 检查源码的Linux系统相关软件属性，创建Makefile
+            • make | 根据makefile编译，利用gcc将源码编译成目标文件(通过库函数连接产生一个完整的可执行文件，在当前编译目录下)
+            • make install | 根据Makefile中关于install的项目，将便已完成的文件安装到预定的目录中(etc(配置文件)、lib(函数库)、bin(执行文件)、man(说明文件)等)
+            • 没有做软件相关性检查，可能导致依赖的其它软件不存在或者版本不对，从而可能无法正常运行
+        • 软件管理工具
+            • 安装前检查硬盘容量和操作系统版本等，需要与原作者相同的Linux环境
+            • rpm (更多的被企业应用)
+                • RedHat Package Manager
+                • rpm -ivh $rpmPackageName | 安装
+                • rpm -qa $xxx | 查找软件全称
+                • rpm -ql $packageName | 查找软件向系统写入的文件列表
+                • rpm -e $packageName | 卸载
+            • dpkg
+                • Debian Package
+                • dpkg -i $debPackageName | 安装
+                • dpkg -l $xxx | 模糊查询
+                • dpkg --listfiles $xxx | 查询属于xxx的文件
+                • dpkg -e $packageName | 卸载
+        • 线上升级
+            • 解决软件包的依赖问题
+                • 系统创建软件列表
+                • 安装软件包时，在软件列表中寻找，并与已安装的软件对比
+                • 将相关软件一次性安装
+            • RPM => yum(RedHat)、YOU(Yast Online Update)(SUSE)、urpm(Mandriva)
+                • yum
+                    • yum install $packageName | 安装
+                    • yum update $packageName | 升级
+                    • yum remove $packageName | 卸载
+                    • yum search $keyword | 查找软件包
+                    • yum list installed | 列出所有已安装的软件包
+                    • yum info $packageName | 获取软件包信息
+                    • yum provides $packageName | 列出软件包提供哪些文件
+                    • yum clean headers | 清除header
+                    • yum clean packages | 清除下载的rpm包
+                    • yum clean all | 清除缓存的软件包和旧的headers
+            • dpkg => APT(Advance Packaging Tool)
+                • apt
+                    • apt-get install $packageName | 安装
+                    • apt-get update | 建立更新软件包列表
+                    • apt-get upgrade | 将系统所有软件包升级至最新版
+                    • apt-get remove $packageName | 卸载
+                    • apt-get purge remove $packageName | 清除软件包和配置
+                    • apt-cache search $keyword/$RegularExpression | 查找软件包
+                    • apt-cache show $packageName | 获取软件包的详细信息
+                    • apt-cache showpkg $packageName | 获取软件包版本和依赖关系
+                    • apt-get clean | 清除整个软件包缓冲区
+                    • apt-get autoclean | 按依赖关系清除缓冲区中多余的软件包
+            • yum用python写成，效率低于apt
+        • 图形工具(不推荐)
+            • Synaptic(Fedora/Ubuntu)
+            • YaST2(SUSE/openSUSE)
+    • 磁盘管理方式
+        • 文件系统
+            • FAT32 (File Allocation Table)
+                • Window95时代采用的，现在还有人在用(U盘)
+                • 32位的值描述文件大小，故单个文件不超过4G
+                • 读入一个data block之后才知道下一个的位置
+                • data block不相邻导致读写性能急剧下降，磁盘碎片整理可以提高性能
+            • NTFS
+                • Windows XP和Windows 7都支持
+                • 单个文件最大可以达到2T
+            • ExtN(N=2/3/4)
+                • Linux的文件系统格式，比FAT32早
+                • 基于inode的索引式文件系统
+                    • inode数据结构代表一个文件，储存文件属性和权限
+                    • data block区块存放实际数据
+                        • 每一个都有一个唯一的编号，inode中记录相应的data block编号
+                    • superblock记录整个文件系统的整体信息，包括inode和data block的总量、使用和剩余量
+                • 索引式读取，保证在磁盘只转一圈读出所有数据，磁盘碎片影响不大
+        • 磁盘的基本操作
+            • df [-a] | 查看系统中所有磁盘的整体用量
+                • Filesystem 1K-blocks Used Available Use% MountedOn
+                • Filesystem(文件系统): 指磁盘分区，ExtN相当于类，Filesystem相当于类的实例
+                • MountedOn(挂载点): 具体的目录
+                • /dev/目录下所有的文件都与一个具体设备相关，有物理的和虚拟的
+                • /dev/sda1是一个具体物理设备，对应系统第一块串口硬盘的第一个分区，sda2第二个分区，sdb第二块串口硬盘，以此类推
+                • /dev/mapper/*是虚拟设备，实际上是逻辑卷
+                • tmpfs、procfs、sysfs等不对应任何设备，是真正的文件系统名称
+            • du | 查看局部数据
+                • 搜索所有的inode来计算局部数据，执行效率比df差很多
+            • dd | 转换和拷贝文件，可以直接读取磁盘的每一个扇区或者镜像整个磁盘
+                • dd if=$input_file of=$out_file
+                • $input_file默认为标准输入，$out_file默认为标准输出
+                • dd if=/dev/sda | gzip -9 > ./sda.img //将整个磁盘做一个镜像
+                    • 镜像：一个磁盘上的数据在另一个磁盘上一个完全相同的副本，可直接刻录在光盘上
+                    • 常见的镜像文件格式有ISO、BIN、IMG、TAO、DAO、CIF、FCD
+                • gzip -dc ./sda.img | dd of=/dev/dsa //恢复整个磁盘内容
+                • dd if=/dev/sda of=./mbr.img bs=512 count=1 | 只读取磁盘的首个512字节信息，即第一扇区
+                • dd if=/dev/urandom of=/dev/sda1
+                • dd if=/dev/zero of=./test.file bs=1024 count=1000000 | 测试磁盘的读写速度
+                • dd if=./test.file bs=8k | dd of=/dev/null
+                • dd if=/dev/sda of=/dev/sda
+                • urandom(随机数), zero(0，读入数据为0), null(写黑洞)
+            • fsck
+                • 系统启动阶段自动执行，对文件系统的损坏进行修复
+                • fsck -t $FileSystem $deviceName
+                • fsck -f -t ext3 /dev/hda3
+                    • -f 强制检查，没有报错的磁盘也进行检查; 一般非法关机会导致磁盘报错
+            • mount
+                • mount [-t $fileSystem] $deviceName $dir
+                    • mount -t vfat /dev/sdb1 /data | 将硬盘第二个串口的第一个分区挂接到/data目录下
+                    • -t 一般多余，ExtN超级快可以连接到具体的文件系统
+                • Linux使用设备文件描述设备，如果一个实际的文件内容与磁盘设备文件中内容一致，也可以被挂接起来
+                    • mount -o loop ./sda1.img /mnt/sda1
+                    • 以此类推，下载的*.iso文件也可以挂接到某个目录直接访问
+                    • mount -o loop ./CentOS-6.4-x86_64-bin-DVD1.iso /mnt/centos | 虚拟光驱挂载
+                    • -ro(挂接的磁盘是只读的), -rw(可读可写的), loop(挂接文件是虚拟的环形设备)
+            • unmount
+                • unmount $dir <=> unmount $deviceName
+            • fdisk | 磁盘分区
+                • cfdisk更好用，CentOS有提供
+            • mkfs.$targetName | 磁盘格式化
+                • mkfs.ext3 | Linux下格式化为ext3文件系统
+                • mkfs 更为通用
+        • /etc/fstab | 决定分区的连接
+            • 决定磁盘的各个分区具体挂接到那个目录，一旦损坏则系统无法正常启动
+            • 1 设备文件、磁盘卷标或者UUID
+            • 2 挂接点
+            • 3 文件系统类型
+            • 4 mount命令的-o选项参数，defaults为未给定时的
+            • 5 是否使用dump命令备份，0不备份，1每天备份
+            • 6 是否使用fsck检查磁盘，0不检查，1最早检查(一般只有根目录为1)，2比1晚一点检查(除根目录之外的)
+            • swap | 交换分区
+                • 用来扩展虚拟内存空间的
+                • fdisk来创建，mkswap格式化，swapon挂接，swapoff关闭
+                • dd if=/dev/zero of=/tmp/swap bs=1M count=1024 | 创建一个空文件
+                • mkswap /tmp/swap | 格式化
+        • 逻辑卷
+            • 弹性的调整文件系统的容量
+            • LVM(Logical Volume Manager)逻辑卷管理器
+                • PV(Physical Volume)物理卷，具体的硬盘分区
+                • VG(Volume Group)卷组，物理硬盘，多个物理卷组成
+                • PE(Physical Extend)物理扩展区，LVM最小储存区，一般为4M，每个卷组最多65534个PE，即256G
+                • LV(Logical Volume)逻辑卷，卷组上切分，大小是PE的整数倍，通过调整PE个数来调整容量
+            • 一个逻辑卷对应多个物理分区时候的写入模式
+                • 线性模式(linear)：逐个物理分区使用，写满一个再写下一个，默认
+                • 交错模式(triped)：每一笔拆分成两个部分，提高读写效率，某个分区挂了，数据就挂了
+            • 基本操作
+                • 创建物理卷：pvcreate, pvscan, pvdisplay, pvremove
+                    • pvcreate /dev/hdb{1, 2, 3, 4}
+                • 创建卷组：vgcreate, vgscan, vgdisplay, vgextend, vgreduce, vgchange, vgremove
+                    • vgcreate /dev/hdb{1, 2, 3} NewVolGroup
+                • 创建逻辑卷：lvcreate, lvscan, lvdisplay, lvextend, lvreduce, lvremove, lvresize
+                    • lvdisplay | 查看现有的全部PE
+                    • lvcreate -l 3842 -n lv_data NewVolGroup
+                        • -l 分配的PE数量
+                        • -n 为新的LV命名
+                • 挂载
+                    • mkfs.ext4 /dev/mapper/NewVolGroup-lv_data
+                    • mkdir /mnt/data
+                    • mount /dev/mapper/NewVolGroup-lv_data /mnt/data
+            • 扩展逻辑卷
+                • vgextend NewVolGroup /dev/hda4 | 将新的物理卷加入到卷组
+                    • vgdisplay发现有新的Free PE
+                • lvresize -l +1274 /dev/mapper/NewVolGroup-lv_data | 将新增的PE加入到逻辑卷中
+                • resize2fs /dev/mapper/NewVolGroup-lv_data | 格式化新增的磁盘空间
+            • 减小逻辑卷
+                • pvdisplay /dev/hda1 | 查看hda1的大小
+                • 抽出相应大小的磁盘
+                    • unmount /mnt/data
+                    • e2fsck -f /dev/mapper/NewVolGroup-lv_data
+                    • resize2fs /dev/mapper/NewVolGroup-lv_data 14990M
+                    • mount /dev/mapper/NewVolGroup-lv_data /mnt/data
+                    • lvresize -l -1282 /dev/mapper/NewVolGroup-lv_data | 回收PE
+                • 将空闲的PE移动至hda1
+                    • psmove /dev/hda1:0-1273 /dev/hda4:0-1273
+                    • psmove /dev/hda1:1274-1281 /dev/hda3:1272-1279
+                • vgreduce NewVolGroup /dev/hda1
+                • PE编号从0开始
+    • 解决上网问题
+        • IPv4
+            • 四个字节，每个字节8位二进制数组成，分为网络地址和主机地址
+        • 子网掩码
+            • 四个字节，32位，左边为1，右边为0，通过与IP地址按位去与获得网络地址，屏蔽掉的为主机地址
+            • 一个子网中最多只能有254个主机，0用来作为网络地址，255用来做广播地址(向255主机发消息，所有主机都能收到)
+            • 简化写法192.168.1.1/24，24表示左边24位为1
+        • IPv6
+            • 6个字节，128位，每一粒沙子都能分到一个IP，消除了对网络地址转换(NAT)的依赖
+            • 过渡期存在兼容问题，许多骨干网运营商按兵不动
+        • 配置文件
+            • /etc/sysconfig/network-scripts/ | 保存网络接口配置文件
+                • ifcfg-eth0
+                    • DEVICE=eho0 | 第一个网卡是eth0，第二个是eth1...
+                    • BOOTPROTO=static | 启动时IP取得的协议，static(固定IP地址)/dhcp/none
+                    • BROADCAST=192.168.1.255 | 广播地址
+                    • IPADDR=192.168.1.23 | IP地址
+                    • NETMASK=255.255.255.0 | 子网掩码
+                    • NETWORK=192.168.1.0 | 子网地址
+                    • ONBOOT=yes | 开机时是否启动网卡
+                    • TYPE=Ethernet | 网卡类型为以太网类型
+                • ifup-XXX和ifdown-XXX | 负责关闭或开启某项网络功能，比如拨号上网等
+        • DNS(Domain Name System/Server)服务器
+            • 将域名转换为IP地址的服务器
+            • /etc/resolv.conf | 设定DNS服务器
+                • nameserver 8.8.8.8 | 指定域名服务器为谷歌域名服务器
+            • 域名解析
+                • 将域名映射为IP地址的过程
+                • 一个IP可以对应多个域名
+    • 驱动程序安装
+        • Linux设备驱动程序通常以.c(驱动程序源程序)或.o(编译后的驱动程序模块)的形式提供
+        • make产生.ko目标文件，make install或手工拷贝到lib/modules/内核版本/net目录下
+        • 也可能以.rpm方式提供
+    • 设定IP地址
+        • 手动设定
+            • 1 图形界面工具
+            • 2 直接编辑/etc/sysconfig/network-scripts/下面的网卡配置文件
+            • 3 加入ifconfig来指定网卡IP地址
+                • ifconfig eth0 192.168.1.252 netmast 255.255.255.0
+            • 4 把ifconfig语句写入/etc/rc.d/rc.local文件中
+        • 自动获取
+            • 私网中IP地址一般自动获取，避免冲突
+            • 先启动局域网中DHCP服务器
+            • 把ifcfg-eth0文件中的BOOTPROTO改成dhcp，然后#setup service network restart
+    • 上网方式
+        • 固定IP上网
+            • ifconfig设置运营商给的IP地址，然后route add default gw $网关地址 | 添加默认网关
+            • ping通之后把route命令加入到启动脚本(rc.local)中
+            • 或者把默认网关地址写入配置文件(ifcfg-eth0): GATEWAY=$网关IP
+            • 可以增加路由器来支持多台电脑上网，默认网关地址设置为路由的IP地址
+                • route add default gw $路由器IP地址
+        • ADSL拨号上网
+            • 使用宽带账号和密码拨号
+            • 猫(modem)通过PPPoE协议在以太网与服务器之间建立PPP(点对点协议)连接
+            • Linux系统
+                • 电脑与猫相连，DSL灯亮代表线路通了
+                • 确认安装了rp-pppoe软件包(默认安装)
+                • #pppoe-setup
+                    • Enter your Login Name (default root): 运营商给的用户名
+                    • Enter the Ethernet interface ... (default eth0): 与猫连接的网卡
+                    • Do you want the link to come up on demand ... Enter the demand value (default no): 回车
+                    • Enter the DNS information here: 回车
+                    • Please enter your password: 运营商给的密码
+                    • Please re-enter your password: 重复
+                    • Choose a type of firwall (0-2): 输入0，不使用防火墙
+                    • Do you want to start this connection at boot time? 输入yes，开机就能上网
+    • Shell
+        • 命令行解释和执行器，介于使用者和操作系统核心程序(kernel)之间的接口
+        • shell成员
+            • Bourne shell(/bin/sh): 标准的UNIX shell
+            • Bourne again shell(/bin/bash): bash, Linux下经典的shell, 对Bourne shell向下兼容
+            • C shell(/bin/csh)
+            • Korn shell(/bin/ksh)
+            • Tenex C shell(tcsh)
+        • bash
+            • alias | 别名
+            • history | 历史命令
+            • 工作控制
+                • ps | 列出正在运行的进程
+                • kill | 向一个或多个进程发信号(进场是杀掉进程)
+                    • kill -l | 查看所有的kill信号
+                    • killall有可能杀不掉
+                    • ps -> pid, kill -9 $pid彻底杀掉
+                    • ps -aef | awk '/xload/{print\"kill -9\", $2}' | 杀掉xload进程
+                • jobs | 列出自己运行的进程
+                • bg | 将进程放到后台
+                • fg | 将进程放到前台
+                • control-z | 悬挂进程
+                • '|', '>', '<' | 管道和重定向
+        • 环境变量
+            • 局部变量无法传递给子shell，环境变量可以
+            • 环境变量包括：PATH，HOME，LOGNAME，IFS和SHELL等
+            • set, env, export设置环境变量；unset清楚设置；readonly设置只读属性
+        • bash的配置文件
+            • login shell
+                • 用户登录后读取系统配置文件/etc/profile，对所有用户都起作用的环境变量设置在这里
+                    • #PATH: 根据UID决定PATH变量要不要包含sbin的系统指令目录
+                    • #USER: 根据用户的账号设置次变量的内容
+                    • #MAIL: 根据账号设置/var/spool/mail/账号名称
+                    • 根据主机的hostname指令设置此变量的内容
+                    • #HISTSIZE: 历史命令记录数
+                    • 调用外部文件：
+                        • /etc/inputrc: 用来设置bash的热键、tab是否有声音等信息
+                        • /etc/profile.d/*.sh: 规定bash的操作界面、语系和公共的命令别名
+                        • /etc/sysconfig/il8n: 供/etc/profile.d/lang.sh调用，决定bash默认语系
+                • 读取用户的个人配置文件
+                    • 依次读取~/.bash_profile、/.bash_login、~/.profile, 只读取一个
+                    • ~/.bashrc | 如果存在则~/.bash_profile会调用
+                    • ~/.bash_history | 历史命令记录，每次登陆bash都会读入内存
+                    • ~/.bash_logout | 离开之前需要做的事情，如清掉屏幕信息
+                    • /etc/bashrc | 如果存在，会被~/.bashrc调用
+            • non login shell
+                • 不需要重复登陆
+                • 调用~/.bashrc -> /etc/bashrc -> /etc/profile.d/*.sh -> /etc/sysconfig/il8n
+            • 个人需要的设置写在~/.bashrc中，source一下生效
+    • 文本处理
+        • 查看文本内容
+            • cat, more, less, head, tail(查看日志，试试监视，默认最后十行)
+        • 正则表达式
+            • [] | 括号内字符做并运算，如[abcd]等价于a|b|c|d
+            • - | 范围描述符，用在[]内,如[a-d]; 如果要使用-则放在方括号开头，如[-abc]
+            • ^ | 除了方括号内的字符，如[^abc]
+            • ? | 有一个或者没有
+            • + | 至少有一个
+            • () | 子表达式
+        • 搜索文本
+            • grep(global search regular expression and print out the line)
+                • ^ | 句首
+                • $ | 句尾
+                • * | 0次货多次
+                • [] | ^[0-9]
+                • [^] | [^(D-F)level]
+                • () | 不在范围内的字符
+                • \< | 词首
+                • \> | 词尾
+            • egrep
+                • grep扩展，支持更多正则表达式元字符
+            • fgrep | fixed/fast grep
+                • 只搜索字符串，不使用正则表达式
+        • 排序和去重
+            • cut -d' '-f1 ~/.bash_history|sort -d|uniq -c|sort -nr|head //统计最常用的十条命令
+                • cut -d' ' -f1 ~/.bash_history | 以空格为分隔符(-d默认分隔符为tab)剪出第一列(-f1)
+                • sort -d | 按字典(-d)排序
+                • uniq -c | 去重并统计次数(-c)，只能去掉连续的重复
+                • sort -nr | 按数字(-n)降序(-r)排列，默认升序
+                • head | 显示前十行
+        • 文件对比 diff
+            • diff -ur file01_old file01_new > file01.patch
+        • cut, wc, tr, split, join ...
+• ###第三章
+    • Linux的文件组织结构
+        • /
+            • bin
+            • boot
+                • grub
+            • dev
+            • etc
+                • rc.d
+            • home
+            • lib
+            • media
+                • cdrom
+                • floppy
+            • mnt
+            • opt
+            • root
+            • sbin
+            • srv
+            • tmp
+            • usr
+                • bin
+                • include
+                • lib
+                • local
+                    • bin
+                    • etc
+                    • include
+                    • lib
+                    • share
+                    • src
+                • share
+                • sbin
+                • src
+            • var
+                • account
+                • cache
+                • lib
+                • lock
+                • log
+                • mail
+                • run
+                • spool
+                • tmp
+    • / | 根文件系统
+        • 挂接在'/'上的设备叫根设备，如果是磁盘的分区，则叫根分区，也称根文件系统
+        • 根分区是操作系统启动时默认挂接的设备
+            • 必须具备挂接其他设备和分区的功能，比如：init、mount等工具，inittab、fstab等配置，以及其它重要的启动数据
+            • 也得包括更新、修复系统的工具，备份和还原工具
+            • 并非越大越好
+                • 根文件系统包含许多系统特有的，不能通过网络共享，最下滑根分区可以最大化其它磁盘空间
+                • 避免用户的根分区太小而无法安装
+                • 分区越大，故障的概率越高
+        • 必备的内容，可以是符号连接
+            • bin(binary) | 重要的可执行文件，shell命令
+            • boot |  引导器配置文件、内核等
+            • dev(device) | 设备文件
+            • etc(etcetera) | 系统专有配置文件
+            • lib(library) | 重要的共享库和内核模块
+            • media | 可移动设备挂接点
+            • mnt | 其它文件系统的临时挂接点
+            • opt | 附加应用软件包
+            • sbin | 重要的系统可执行文件
+            • srv | 本地系统提供的用于服务器的数据
+            • tmp(temp) | 临时文件
+            • usr(Unix System Resource) | 文件系统第二层
+            • var(variable) | 可变数据
+        • 可选内容
+            • home | 用户目录
+            • lib64 | X86_64的Linux系统特有
+            • root | root用户的专有目录
+    • /bin
+        • 必有的内容，可能是一个软连接
+            • cat/chgrp/chmod/chown/cp/date/dd/df/dmesg/echo/false/hostname/kill/ln/login
+            • ls/mkdir/mknod/more/mount/mv/ps/pwd/rm/rmdir/sed/sh/stty/su/true/umount/uname
+            • /bin/sh经常由bash假冒，历史原因
+            • '['和'test'必须放在一起，可以再/bin目录或者/usr/bin目录下
+        • 可选的内容
+            • csh/ed/tar/cpio/gzip/gunzip/zcat/netstat/ping
+    • /boot | 启动过程所需要的内容
+        • 包含Linux启动过程所需要的所有内容，用于内核开始执行用户级别程序之前的东西
+        • 推荐让/boot独占一个磁盘分区，与根分区分离，从而减小根分区，保护启动分区(完全只读)
+    • /dev | 设备文件或者专有文件存放的位置
+        • 如果选择devfs而不使用sysfs，或使用比较老的内核，则必须包含MAKEDEV命令文件
+    • /etc | 系统特有的配置文件
+        • 用于控制程序运行的本地文件，大多数为只读且私有的，文本文件(可阅读)
+        • 需要的目录
+            • opt | /opt目录下个软件的配置文件
+                • 附加应用软件包的配置文件必须在/etc/opt/$subdir下，$subdir与/opt下对应软件包目录相同
+            • rc.d | init进程的配置文件
+            • X11(可选) | X Window系统的配置文件
+                • 安装了X Windows系统，则以下文件必须安装在/etc/X11目录下
+                    • Xconfig | XFree86早期版本的配置文件
+                    • XF86Config | XFree86第3、4版的配置文件
+                    • Xmodmap | 定义xdm和xinit所需要的键盘映射
+                    • xorg.conf | Xorg的配置文件
+            • sgml(可选) | SGML的配置文件
+            • xml(可选) | XML的配置文件
+        • 需要的文件
+            • csh.login | C shell登录的全局初始化文件，有C shell时有效
+            • exports | NFS文件系统的访问控制列表，有NFS支持时有效
+            • fstab | 文件系统的静态信息，系统初始化时需要挂接多个文件系统时需要
+            • ftpusers | FTP守护进程的用户访问控制列表
+            • gateways | routed的网关列表
+            • gettydefs | getty程序的配置文件
+            • group | 用户组列表文件
+            • host.conf | 决定如何解析域名
+            • hosts | 主机名静态信息
+            • hosts.allow | 允许访问本机的IP地址列表
+            • hosts.deny | 禁止访问本机的IP地址列表，冲突时优先
+            • hosts.equiv | 信任主机列表，作用于rlogin, rsh, rcp
+            • hosts.lpd | 信任主机列表，作用于lpd
+            • inetd.conf | inetd守护进程的配置文件
+            • inittab | init程序的配置文件
+            • issue | 登录提示符上面的消息和标志文件
+            • ld.so.conf | 搜索共享库的目录列表文件
+            • motd | 本机的标识信息
+            • mtab | 文件系统的动态信息，记录当前挂载的文件系统
+                • 历史遗留问题，不适合只读文件的原则
+            • mtools.conf | mtools程序的配置文件
+            • networks | 网络名称的动态信息
+            • passwd | 用户密码文件
+            • printcap | ldp打印机的性能数据库
+            • profile | sh shell登录的全局初始化文件
+            • protocols | 网络协议定义文件
+            • resolv.conf | DNS域名解析的配置文件
+            • rpc | RPC协议定义文件
+            • securetty | root登录的TTY访问控制文件
+            • services | 记录网络服务名和它们对应使用端口号及协议
+            • shells | 可使用的登录shell路径名
+            • syslog.conf | syslogd守护进程的配置文件
+    • /home | 用户专有
+        • 每个用户都有一个与用户名同名的子目录
+            • 用户独有的配置文件保存在用户目录下，以'.'开头的隐藏文件
+            • 如果某个程序需要多个配置文件，就创建一个以'.'开头的隐藏目录，目录内的文件不需要再以'.'开头
+        • 不属于根文件系统，一般以单独的磁盘分区挂接
+    • /lib | 共享库和内核模块
+        • 必须与根文件系统放在一起，在系统启动阶段和运行根文件系统上各种命令时都需要用到这些共享库
+        • 如果在x86_64系统下，此目录部分功能转移到/lib64目录下，此目录保留提供i386兼容性使用
+        • 但内核模块只会使用/lib目录，无论是否是x86_64环境
+        • 至少存在一组如下组合文件，可以是符号连接
+            • libc.so.* | C动态链接库
+            • ld* | 运行时连接器/加载器
+        • modules子目录必须存在/lib目录下，是内核可装载模块的存放位置
+        • 如果安装了C预处理器，/lib/cpp必须是其符号连接，历史原因
+    • /media | 可移动设备
+        • 用于挂接如软盘、光盘、U盘等可移动设备，不同子目录挂接不同类型的设备，目录名就是设备类型
+        • /mnt只是临时挂接点
+        • 可能会出现的内容
+            • floppy | 软盘驱动器
+            • cdrom | CD-ROM
+            • cdrecorder | 光盘刻录机
+            • zip | Zip磁盘驱动器，文物级别
+        • 如果不只有一个同类的驱动器，则目录名后面带一个以0其实的数字，如cdrom0, cdrom1...
+    • /mnt | 临时挂接
+        • 让系统管理员临时关节某个文件系统，不应该影响任何程序的运行，不要在此安装程序
+    • /opt | 附加软件包
+        • 每个软件包在此目录下拥有一个自己目录，目录名与软件包名相同，存放可执行程序和静态数据
+        • /opt/bin, /opt/doc, /opt/info, /opt/lib和/opt/man保留给管理员使用的
+        • 用户调用的程序放在软件包目录下的bin子目录，联机帮助放在软件包目录下share/man子目录里
+        • 软件包的可变文件安装在/var/opt目录下
+    • /root | root专有
+        • root之外任何人不具备访问权限
+    • /sbin | 必备的系统软件
+        • 用于系统维护的软件和某些只限root用户使用的命令存储在/sbin、/usr/bin和/usr/local/sbin目录下
+        • /sbin目录存储那些在系统启动、恢复、还原以及修复过程中必备的系统工具，也是对/bin下内容的补充
+        • 应该出现的命令
+            • shoutdown | 关机
+            • fastboot | 快速重启，不做磁盘检查
+            • fasthalt | 快速停止运行，不做磁盘检查
+            • fdisk | 磁盘分区表维护工具
+            • fsck | 文件系统检测与修复工具
+            • fsck.* | 特定文件系统检测月修复工具
+            • getty | getty程序，设置终端机模式、连线速率和管制线路
+            • halt | 停止系统运行
+            • ifconfig | 网口配置工具
+            • init | 系统初始化进程，内核调用的第一个用户进程
+            • mkfs | 创建文件系统，也叫格式化
+            • mkfs.* | 创建特有的文件系统
+            • mkswap | 格式化交换分区
+            • reboot | 重新启动
+            • route | IP路由表维护工具
+            • swapon | 开启页交换
+    • /srv | 服务进程所需数据存放地
+        • 某些服务进程启动后，需要读取的数据放在次目录中
+        • 暂未规范命名方法
+            • 按协议构造：ftp/rsync/www/cvs等
+            • 按管辖范围构造：/srv/physics/www、/srv/compsci/cvs等
+    • /tmp | 临时文件
+        • 能够被任何程序、任何用户访问，建议系统重启后清除/tmp目录下的内容
+    • /usr | 文件系统的第二个主要区段
+        • 共有和只读，不能写入
+        • 要求出现的目录
+            • bin | 大部分用户命令
+            • include | C/C++程序头文件目录
+            • lib | 程序库
+            • local |  用户自行安装的程序
+            • sbin | 非重要的系统程序
+            • share | 体系结构独立数据
+            • tmp | 到/var/tmp的符号连接，保持与老系统的兼容
+        • 可选的目录
+            • games | 寓教于乐程序
+            • src | 源代码
+        • /usr/bin
+            • 系统中绝大多数可执行文件都放在这里
+            • 必须放在此目录下的文件，除非没有安装
+                • perl | Perl语言解释器
+                • python | Python语言解释器
+                • tclsh | TCL解释器
+                • wish | 图形界面的TCL解释器
+                • expect |TCL经典扩展
+        • /usr/include
+            • C语言头文件都放在这里
+        • /usr/lib
+            • 库和目标文件
+            • 二进制文件，不被用户和shell直接执行
+            • 应用程序可以建立独立的子目录，所有与体系结构有关的执行数据都放在子目录中
+            • 如果有/usr/sbin/sendmail，则/usr/lib下必须有其符号连接
+            • x86_64系统，此目录功能转移到/usr/lib64目录，此目录给i386兼容
+        • /usr/local
+            • 文件系统的第三个主要分区，供管理员安装局域性软件
+            • 保证系统更新时不会被覆盖，一般挂接到独立的分区上
+            • 也可以用来在一组主机之间共享程序和数据
+            • 必须出现在/usr/local中:
+                • bin | 局域性可执行文件
+                • etc | 局域性软件的配置文件
+                • include | 局域性C头文件
+                • lib | 局域性程序库
+                • man | 局域性帮助文档
+                • sbin | 局域性系统管理可执行文件
+                • share | 局域性体系结构无关数据
+                • src | 局域性源代码
+            • /usr/local/etc可能是/etc/local的符号连接，将所有配置文件放在/etc目录下
+            • 局部优先于全局
+                • /usr/local/include优先于/usr/include被搜索
+                • /usr/local/bin优先于/usr/bin
+        • /usr/sbin
+            • 非必要的系统管理软件的可执行文件存放处
+            • 用于还原、更新、修复系统以及挂接/usr目录的管理程序必须放在/sbin目录下
+        • /usr/share
+            • 存放所有体系结构无关的数据，可以共享给运行在任何体系结构下的相同的操作系统
+            • 体系结构：i386、Alpha和PPC可以共同维护一个/usr/share
+            • 任何程序的不需要修改的与体系结构无关的数据都应该宝村子啊/usr/share(局域软件是/usr/local/share)中
+            • 与安装软件有关的，必须出现在/usr/share中的：
+                • dict | 单词列表
+                • doc | 其它文档
+                • games | /usr/games的静态数据
+                • info | GNU Info系统的主目录
+                • locale | 本地信息
+                • nls | 本地语言支持的消息目录
+                • sgml | SGML数据
+                • terminfo | terminfo数据库目录
+                • tmac | 没有与groff异同发布的troff宏
+                • xml | XML数据
+                • zoneinfo | 时区配置信息
+            • 必须出现在/usr/share中：
+                • man | 在线帮助手册
+                • misc | 体系结构无关的其它数据
+            • /usr/share/man
+                • 包含了/和/usr/下大部分程序的帮助信息
+                • 存储路径为：$mandir/$locale/man$section/$arch
+                    • man1: 公共可用的命令或软件的指南页面
+                    • man2: 所有系统调用的说明
+                    • man3: 库函数说明
+                    • man4: 特种文件的说明，如/dev目录下的设备文件和提供网络协议支持的内核接口
+                    • man5: 大部分数据文件的格式说明
+                    • man6: 寓教于乐程序、演示程序和一些不太重要的程序说明文档
+                    • man7: 其它类型的在线帮助，如troff等文本处理宏的信息
+                    • man8: 系统维护程序的文档
+                    • 也必须出现在/usr/share/man/$locale中
+                        • $locale = en/fr/ko/ja等 | 提供多语言支持
+                • /usr/local下的软件帮助信息保存在/usr/local/man下，目录结构同上
+            • /usr/share/misc
+                • 不需要在/usr/share目录下拥有自己目录的应用程序的体系结构无关的数据放在这里
+                • 会出现的内容
+                    • ascii | ASCII码表
+                    • magic | file命令使用的特征符号表
+                    • termcap | 终端性能数据库
+                    • termacp.db | 终端性能数据库
+    • /var
+        • 包含系统中绝大多数随时变化的数据，比如系统日志
+        • 某些内容不能共享给其它系统，比如/var/logs、/var/lock和/var/run
+        • 某些内容是可以共享的，比如/var/mail、/var/cache/man和/var/spool/news
+        • 必备的内容：
+            • cache | 应用程序的缓存数据
+            • lib | 可变的状态信息
+            • local | /usr/local的可变数据
+            • lock | 锁文件
+            • log | 日志文件与目录
+            • opt | /opt的可变数据
+            • run | 与当前运行进程有关的数据
+            • spool | spool应用程序数据
+            • tmp | 系统重启期间起到保护作用的临时文件
+        • 如果安装了某些程序，会出现的内容：
+            • account | 记录京城的运行情况
+            • games | 寓教于乐程序的可变数据
+            • mail | 用户的邮件
+            • yp | 网络信息服务(NIS)数据库文件
+        • /var/account
+            • 系统审计程序psacct的专有目录
+            • psacct可以监控所有用户执行的命令，主要命令有ac/lastcomm/acction/sa
+        • /var/cache
+            • 应用程序的缓存数据，加快费时运算或I/O任务
+            • 应用程序必须能够再生或者恢复这些数据
+            • 与/var/spool不同，删除缓存文件不会造成数据丢失
+        • /var/lib
+            • 保存应用程序或系统有关的状态信息，即程序运行过程中不断修改的数据
+            • 一个应用程序必须为其状态数据占有/var/lib下的一个子目录
+            • misc子目录提供给不需要占用一个子目录的程序
+        • /var/lock
+            • 锁文件必须保存在/var/lock目录下
+            • 锁文件命名方式必须是LCK$deviceName, 如/dev/ttyS0锁文件名为LCK..ttys0
+            • 锁文件的内容组织格式必须是HDB UUCP格式
+        • /var/log
+            • 包含各种日志文件，大多数日志文件都保存在这里或相应的子目录里
+            • 应该出现在/var/log中：
+                • lastlog | 每个用户的上次登录记录
+                • messages | 由syslogd产生的系统消息
+                • wtmp | 所有登录与登出记录
+        • /var/mail
+            • 用户邮箱文件的存放处，必须以UNIX邮箱格式存储
+        • /var/opt
+            • /opt下的软件包的可变数据都应该放在/var/opt下子目录中
+            • 子目录的名称应该与/opt子目录名称一致
+        • /var/run
+            • 从系统启动开始至当前系统运行状态信息保存于此
+            • 系统启动进程执行开始必须被清空
+            • 进程标识文件(PID文件)必须放在此目录，命名规则$progName.pid
+        • /var/spool
+            • 供以后使用，一旦被处理完毕就会被删除
+            • 必须放在此目录的内容：
+                • lpd | 打印机spool目录
+                • mqueue | 邮件待发队列
+                • news | 新闻组spool目录
+                • rwho | Rwhod文件
+                • uucp | UUCP的spool目录
+        • /var/tmp
+            • 系统重启期间起到保护作用的临时文件
+            • 在系统启动时不能删除
+    • 完整的文件系统参考Linux系统的文件系统层级标准(Filesystem Hierarchy Standard, 简称FHS)
+• ###第四章 Unix文化和哲学
+    • 万物皆文本
+    • 四处用脚本
+    • 规律无处寻
+    • 配置乱生根
+• ###第五章 shell脚本编程
+    • #!/bin/sh
+• ###第六章 微型语言

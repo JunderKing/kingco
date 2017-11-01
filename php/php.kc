@@ -1,0 +1,565 @@
+### Documentation
+• 语言参考Document:
+    • 基本语法Gramar:
+        • <?php与?> php解析标签内的代码，纯php代码最好省略结束标签以免插入多余空格
+        • //、#、/**/注释不影响?>
+    • 数据类型Data Type:
+        • var_dump(), gettype(), is_type(), settype()
+        • 数据类型运行时由php决定
+        • integer
+            • 八进制=>0, 十六进制=>0x, 二进制=>0b
+            • php7以后八进制传递了非法数字产生ParseError
+            • PHP_INT_MIN~PHP_INT_MAX
+            • 整数溢出将被解释为float
+            • 强制转换：(int)/(integer)/intval()
+                • resource转int时，结果是resource的资源号
+                • float转int向下取整，超出范围为undefined
+                • (int)((0.1+0.7)*10) = 7 (7.9999999999999991118...)
+                • php7起, NaN和Infinity转int结果为0而不是undefined
+        • float(double)
+            • 二进制无法精确表示0.1和0.7等
+            • 比较浮点数是否相等
+                • $epsilon = 0.00001 （机器极小值）
+                • abs($a-$b)<$epsilon
+            • 转化为浮点数除字符串，都是先转int再转float
+            • NAN与除了TRUE以外的任何值进行松散或严格比较结果都是false
+            • is_nan()来检查
+        • string
+            • '':除'\''和\\以外，都被认为是字符，包括\r等
+            • "":变量会被解析，支持转义
+            • Heredoc: $str = <<<EOD\n ...\nEOD;
+                • 结束标识符除了;外不能有任何字符，因此不能缩进
+        • array
+            • php5.4之后可以使用[]创建数组
+            • 数组key可以是integer或者string, key的强制转换:
+                • 合法整型字符串会被转化为整型："8"会被转化为8
+                • 浮点数也会被转化成整型
+                • True=>1, False=>0
+                • Null会被转换为''
+                • 数组和对象不能用作键名
+                • 同一键名后面会覆盖前面
+            • 对数组赋值时如果数组不存在则会新建一个，不建议这样新建数组，可能已定义
+            • unset($arr)删除数组中的某个键值，但不会重建索引
+            • (array)$value <=> array($value): int, float, string, boolean, resource
+            • (array)NULL <=> array()
+        • boolean
+            • 强制转换：(bool)/(boolean)
+            • FALSE:
+                • FALSE, 0, 0.0, '', '0', [], NULL, 空标记SimpleXML
+            • TRUE:
+                • 所有其他值，包括任何Resource和NAN
+        • object
+            • new Object[()]
+        • callable
+        • resource
+        • NULL
+• 内置函数Functions:
+    • 数组相关函数Array Functions:
+        • 创建数组Functions:
+            • `array`                   | "新建一个数组"
+                • array array ([ mixed $... ] )
+                • 自动产生索引为当前索引最大值+1
+                • 数组元素的顺序取决于赋值先后顺序
+            • `count`                   | "计算并返回数组元素个数或对象属性个数"
+                • int count ( mixed $array_or_countable [, int $mode = COUNT_NORMAL ] )
+                • 别名sizeof()
+            • `range`                   | "创建一个包含指定范围的数组"
+                • array range ( mixed $start , mixed $end [, number $step = 1 ] )
+                • 包含$start和$end
+            • `array_pad`               | "以指定长度将一个值填充进数组"
+                • array array_pad ( array $array , int $size , mixed $value )
+                • $size小于等于数组长度则没有任何填充
+                • $size为正添加至数组末尾
+                • $size为负添加至数组开头
+            • `array_fill`              | "用给定的值填充数组"
+                • array array_fill ( int $start_index , int $num , mixed $value )
+                • $start_index如果为负，则第一个元素key为$start_index，之后从0开始
+                • $num必须大于等于0
+            • `array_fill_keys`         | "使用指定的键和值填充数组"
+                • array array_fill_keys ( array $keys , mixed $value )
+                • 使用$keys数组的值作为键，$value作为值
+            • `array_combine`           | "将一个数组为key另一个数组为value组合新数组"
+                • array array_combine ( array $keys , array $values )
+                • $keys数组的值作为键，$values数组的值作为值
+                • 如果两个数组长度不一样则返回false
+            • `compact`                 | "将变量名和值作为元素建立数组"
+                • array compact ( mixed $varname1 [, mixed $... ] )
+                • $varname可以是变量名字符串或者变量名数组，可递归
+                • $value可以依次传入多个变量，也可是变量数组
+                • 跟extract()相反
+                • 根据传入字符串搜索变量名，忽略搜索不到的
+            • `extract`                 | "将数组按变量导出"
+                • int extract ( array &$array [, int $flags = EXTR_OVERWRITE [, string $prefix = NULL ]] )
+                • EXTR_OVERWRITE        => 如有冲突，覆盖已有变量
+                • EXTR_SKIP             => 如有冲突，跳过
+                • EXTR_PREFIX_SAME      => 如有冲突，在变量名前加上$prefix
+                • EXTR_PREFIX_ALL       => 给所有变量名前加$prefix
+                • EXTR_PREFIX_INVALID   => 在非法和数字变量名前加$prefix
+                • EXTR_IF_EXISTS        => 只覆盖已定义变量值，比如取_REQUEST
+                • EXTR_PREFIX_IF_EXISTS => 只处理存在的变量，并加$prefix
+                • EXTR_REFS             => 引用提取
+                • $prefix和$key之间会自动加上下划线
+                • 返回成功导入的变量数目
+            • `list`                    | "把数组的值依次赋给变量"
+                • array list ( mixed $var1 [, mixed $... ] )
+                • 按照索引排序后依次赋值
+                • PHP7从左向右，PHP5从右向左
+                • 可以嵌套 => list($a, list($b, $c)) = array(1, array(2, 3));
+        • 数组处理函数Functions:
+            • `array_keys`              | "返回数组中部分的或所有的键名"
+                • array array_keys ( array $array [, mixed $search_value = null [, bool $strict = false]])
+                • 如果指定了$search_value则只返回该值的所有键
+            • `array_values`            | "返回数组中的所有值"
+                • array array_values ( array $array )
+                • 返回所有值并建立数字索引
+            • `array_unique`            | "删除数组中重复值，返回新数组"
+                • array array_unique ( array $array [, int $sort_flags = SORT_STRING ] )
+                • 保留键值，先按value排序，保留同一value的第一个key
+                • 并不意味着同一个值在数组中先出现的键值会被保留
+                • 元素强制转换为string比较是否相同
+            • `array_column`            | "返回数组中指定的一列"
+                • array array_column ( array $input , mixed $column_key [, mixed $index_key = null ] )
+                • params
+                    • array $input => input array
+                    • mixed $column_key => the column of values to return
+                    • [mixed $index_key=null] => the column to use as index/keys for resArr
+                • return
+                    • array => result array
+            • `array_merge`             | "合并一个或多个数组"
+                • array array_merge ( array $array1 [, array $... ] )
+                • 相同的字符串键名，后者会覆盖前者；相同的数字键名，附加而不覆盖；数字键名最后重建索引
+            • `array_merge_recursive`   | "递归合并一个或多个数组"
+                • array array_merge_recursive ( array $array1 [, array $... ] )
+                • 相同的字符串键名，键值合并为一个数组；
+            • `array_push`              | "将一个或多个元素加入数组末尾(入栈)"
+                • int array_push ( array &$array , mixed $value1 [, mixed $... ] )
+                • 不如$array[] = $value;
+            • `array_pop`               | "删除并返回数组最后一个元素(出栈)"
+                • mixed array_pop ( array &$array )
+            • `array_unshift`           | "在数组开头插入若干个元素"
+                • int array_unshift ( array &$array , mixed $value1 [, mixed $... ] )
+                • 整体插入，保持参数顺序
+                • 数字key重新索引
+            • `array_shift`             | "删除并返回数组第一项"
+                • mixed array_shift ( array &$array )
+                • 数字key将重新索引
+                • 重置指针reset()
+            • `array_slice`             | "从数组中取出一段"
+                • array array_slice ( array $array , int $offset [, int $length = NULL [, bool $preserve_keys = false ]] )
+                • 如果$offset为负，则从距离末端相应位置开始
+                • 如果$offset大于数组长度则返回空数组
+                • 未给出$length则直到数组末端
+                • $length为正则返回$length个元素
+                • $length为负则终止在末端$length的地方
+                • $preserve_keys为TRUE则保留key，否则重置数字索引
+            • `array_splice`            | "删除并返回数组的某一部分，并用其他值取代"
+                • array array_splice ( array &$input , int $offset [, int $length = count($input) [, mixed $replacement = array() ]] )
+                • 如果给出了$replacement数组，则删除的元素被数组中的元素替代
+                • 如果$replacement只有一个单元，则直接传值，除非值为数组、对象或者null
+                • 如果$offset和$length没有移除任何元素，则$replacement会插入$offset位置
+            • `array_chunk`             | "将一个数组分割成多个数组"
+                • array array_chunk ( array $array , int $size [, bool $preserve_keys = false ] )
+            • `array_rand`              | "随机取出一个或多个key"
+                • mixed array_rand ( array $array [, int $num = 1 ] )
+                • 采用伪随机数生成
+            • `array_flip`              | "交换数组中的键和值"
+                • array array_flip ( array $array )
+        • 搜索相关函数Functions:
+            • `array_key_exists`        | "判断$key或$index是否存在于数组key中，仅针对第一维度"
+                • bool array_key_exists ( mixed $key , array $array )
+                • 别名key_exists()
+            • `array_search`            | "在数组中搜索给定的值并返回key"
+                • mixed array_search ( mixed $needle , array $haystack [, bool $strict = FALSE ] )
+                • 字符串区分大小写
+                • $strict为true则严格比较
+                • 找到返回key，找不到返回false
+            • `in_array`                | "检查数组中是否存在某个值"
+                • bool in_array ( mixed $needle , array $haystack [, bool $strict = FALSE ] )
+                • 字符串比较区分大小写
+                • $strict为true则严格比较
+                • 找到返回true，找不到返回false
+        • 回调相关函数Functions:
+            • `array_map`               | "为数组的每个元素应用回调函数"
+                • array array_map ( callable $callback , array $array1 [, array $... ] )
+                • 返回array(key/index=>$returnA => 传入一个数组，key会被保留，否则为index
+                • 回调函数参数个数和传入数组数目一样，如果不一致则长度短的会被空元素扩展
+                • 如果回调函数为null，则组合每个数组value
+                • 回调函数传入匿名函数变量，或者函数名字符串
+            • `array_filter`            | "用回调函数过滤数组中的单元"
+                • array array_filter ( array $array [, callable $callback [, int $flag = 0 ]] )
+                • 一次将数组元素传入回调函数，如果返回true则保留，否则删除
+                • 如果没有提供回调函数，则删除所有值为false的元素
+                • key保留不变
+                • 默认$callback仅接受value作为参数
+                • PHP5.6之后添加$flag:
+                    • ARRAY_FILTER_USE_KEY => $callback仅接受key作为参数
+                    • ARRAY_FILTER_USE_BOTH => $callback接受key和value
+                • 不可在回调函数中修改数组本身
+            • `array_walk`              | "使用回调函数处理数组每个元素"
+                • bool array_walk ( array &$array , callable $callback [, mixed $userdata = NULL ] )
+                • 遍历整个数组忽略内部数组指针
+                • callback([&]$value, $key[, $userdata])
+                • 只能改变数组的值，不能增加/删除元素
+                • $userdata作为第三个参数传入回调函数
+            • `array_walk_recursive`    | "对数组中的每个成员递归地应用用户函数"
+                • bool array_walk_recursive ( array &$array , callable $callback [, mixed $userdata = NULL ] )
+            • `array_reduce`            | "通过回调迭代地将数组转化为单一值"
+                • mixed array_reduce ( array $array , callable $callback [, mixed $initial = NULL ] )
+        • 数组差集、交集和并集Functions:
+            • `array_diff`              | "计算数组的差集"
+                • array array_diff ( array $array1 , array $array2 [, array $... ] )
+                • params
+                    • array $array1 => array to compare from
+                    • array $array2 => array to compare against
+                • return 
+                    • array => resArr
+            • `array_diff_key`          | "使用键名比较计算数组的差集"
+                • array array_diff_key ( array $array1 , array $array2 [, array $... ] )
+                • params
+                    • array $array1 => array to compare from
+                    • array $array2 => array to compare against
+                • return 
+                    • array => resArr
+            • `array_diff_ukey`         | "用回调函数对键名比较计算数组的差集"
+                • array array_diff_ukey ( array $array1 , array $array2 [, array $... ], callable $key_compare_func )
+            • `array_diff_assoc`        | "带索引检查计算数组的差集"
+                • array array_diff_assoc ( array $array1 , array $array2 [, array $... ] )
+                • params
+                    • array $array1 => array to compare from
+                    • array $array2 => array to compare against
+                • return 
+                    • array => resArr
+            • `array_diff_uassoc???`    | "用用户提供的回调函数做索引检查来计算数组的差集"
+                • array array_diff_uassoc ( array $array1 , array $array2 [, array $... ], callable $key_compare_func )
+                • params
+                    • array $array1 => array to compare from
+                    • array $array2 => array to compare against
+                    • callable => $key_compare_func => function to compare key
+                • return 
+                    • array => resArr
+            • `array_udiff`             | "用回调函数比较数据计算差集"
+                • array array_udiff ( array $array1 , array $array2 [, array $... ], callable $value_compare_func )
+            • `array_udiff_assoc`       | "带索引检查计算数组的差集，用回调函数比较数据"
+                • array array_udiff_assoc ( array $array1 , array $array2 [, array $... ], callable $value_compare_func )
+            • `array_udiff_uassoc`      | "带索引检查计算数组的差集，用回调函数比较数据和索引"
+                • array array_udiff_uassoc ( array $array1 , array $array2 [, array $... ], callable $value_compare_func , callable $key_compare_func )
+            • `array_intersect`         | "计算数组的交集"
+                • array array_intersect ( array $array1 , array $array2 [, array $... ] )
+            • `array_intersect_key`     | "使用键名比较计算数组的交集"
+                • array array_intersect_key ( array $array1 , array $array2 [, array $... ] )
+            • `array_intersect_ukey`    | "用回调函数比较键名来计算数组的交集"
+                • array array_intersect_ukey ( array $array1 , array $array2 [, array $... ], callable $key_compare_func )
+            • `array_intersect_assoc`   | "带索引检查计算数组的交集"
+                • array array_intersect_assoc ( array $array1 , array $array2 [, array $... ] )
+                • params
+                    • array $array1 => array to compare with
+                    • array $array2 => array to compare against
+                • return
+                    • array => resArr
+            • `array_intersect_uassoc`  | "带索引检查计算数组的交集，用回调函数比较索引"
+                • array array_intersect_uassoc ( array $array1 , array $array2 [, array $... ], callable $key_compare_func )
+            • `array_uintersect`        | "计算数组的交集，用回调函数比较数据"
+                • array array_uintersect ( array $array1 , array $array2 [, array $... ], callable $value_compare_func )
+            • `array_uintersect_assoc`  | "带索引检查计算数组的交集，用回调函数比较数据"
+                • array array_uintersect_assoc ( array $array1 , array $array2 [, array $... ], callable $value_compare_func )
+            • `array_uintersect_uassoc` | "带索引检查计算数组的交集，用单独的回调函数比较数据和索引"
+                • array array_uintersect_uassoc ( array $array1 , array $array2 [, array $... ], callable $value_compare_func , callable $key_compare_func )
+            • `array_replace`           | "替换数组元素，相当于按key并集"
+                • array array_replace ( array $array1 , array $array2 [, array $... ] )
+                • key值相同，后面的数组元素覆盖前面的key
+                • key只存在前面的数组则保持不变
+                • key只存在后面的数组则创建
+                • 返回一个替换后的数组，出错返回null
+                • 非递归
+            • `array_replace_recursive` | "递归替换数组元素"
+                • array array_replace_recursive ( array $array1 , array $array2 [, array $... ] )
+                • key值相同，后面的数组元素覆盖前面的key
+                • key只存在前面的数组则保持不变
+                • key只存在后面的数组则创建
+                • 依次递归处理
+        • 排序相关函数Functions:
+            • `sort`                    | "对数组按值升序排列"
+                • bool sort ( array &$array [, int $sort_flags = SORT_REGULAR ] )
+                • 成功返回true，失败返回false
+            • `rsort`                   | "对数组按值降序排列"
+                • bool rsort ( array &$array [, int $sort_flags = SORT_REGULAR ] )
+                • 成功是返回true，失败返回false
+            • `usort`                   | "使用用户自定义的比较函数对数组中的值进行排序"
+                • bool usort ( array &$array , callable $value_compare_func )
+                • $callback接受前一个值和后一个值
+            • `ksort`                   | "对数组按键名排序"
+                • bool ksort ( array &$array [, int $sort_flags = SORT_REGULAR ] )
+                • 成功返回true，失败返回false
+            • `krsort`                  | "对数组按键名逆向排序"
+                • bool krsort ( array &$array [, int $sort_flags = SORT_REGULAR ] )
+            • `uksort`                  | "使用用户自定义的比较函数对数组中的键名进行排序"
+                • bool uksort ( array &$array , callable $key_compare_func )
+            • `asort`                   | "对数组排序并保持索引关系"
+                • bool asort ( array &$array [, int $sort_flags = SORT_REGULAR ] )
+            • `arsort`                  | "逆向排序并保持索引关系"
+                • bool arsort ( array &$array [, int $sort_flags = SORT_REGULAR ] )
+                • 成功返回TRUE，失败返回FALSE
+            • `uasort`                  | "使用用户自定义的比较函数对数组中的值进行排序并保持索引关联"
+                • bool uasort ( array &$array , callable $value_compare_func )
+            • `natsort`                 | "用自然排序算法对数组排序"
+                • bool natsort ( array &$array )
+            • `natcasesort`             | "用自然排序算法排序，不区分大小写"
+                • bool natcasesort ( array &$array )
+            • `array_multisort`         | "对多个数组或多维数组进行排序"
+                • bool array_multisort ( array &$array1 [, mixed $array1_sort_order = SORT_ASC [, mixed $array1_sort_flags = SORT_REGULAR [, mixed $... ]]] )
+                • 字符串键名不变，数字键名重建
+                • $array1_sort_order => SORT_ASC/SORT_DESC
+                • $array1_sort_flags => 省略
+            • `array_reverse`           | "返回单元顺序相反的数组"
+                • array array_reverse ( array $array [, bool $preserve_keys = false ] 
+                • $perserve_keys为TRUE则保留数字键，默认重新索引，非数字键总是保留
+            • `shuffle`                 | "随机打乱数组"
+                • bool shuffle ( array &$array )
+                • 伪随机
+        • 指针相关函数Functions:
+            • `key`                     | "返回当前单元键名"
+                • mixed key ( array &$array )
+                • 不移动指针，如果指针超出则返回null
+            • `current`                 | "返回数组当前元素"
+                • mixed current ( array &$array )
+                • 返回元素，不移动指针
+                • 别名pos()
+            • `next`                    | "返回下一个元素值并将数组内部指针向后移动一位"
+                • mixed next ( array &$array )
+                • 如果没有下一个元素则返回false
+            • `prev`                    | "将内部指针向前移动一位并返回当前元素"
+                • mixed prev ( array &$array )
+                • 如果没有更前则返回false
+            • `end`                     | "将数组指针指向最后一个元素并返回其值"
+                • mixed end ( array &$array )
+                • 只有真正的变量才能引用传递，函数返回值不可以
+                • 如果是空数组则返回false
+            • `reset`                   | "将数组内部指针指向第一个元素并返回第一个元素"
+                • mixed reset ( array &$array )
+                • 如果是空数组则返回false
+            • `each`                    | "返回当前键值对，并将指向向前移动一步"
+                • array each ( array &$array )
+                • 碰到结尾时停留在结尾
+                • each遍历数组后必须使用reset()
+                • 返回array(0 => $key, 1 => $value, 'key' => $key, 'value' => $value)
+                • 经常和list()结合来遍历数组
+        • 其它函数Functions:
+            • `array_product`           | "计算数组中所有值的乘积"
+                • number array_product ( array $array )
+            • `array_sum`               | "对数组中所有值求和"
+                • number array_sum ( array $array )
+                • 数组为空时返回0，所有值以整数或浮点数返回
+            • `array_change_key_case`   | "将数组中的所有键名修改为全大写或小写"
+                • array array_change_key_case ( array $array [, int $case = CASE_LOWER ] )
+                • params
+                    • array $array => input array
+                    • [int $case] => CASE_LOWER/CASE_UPPER
+                • return
+                    • array => result array/false
+            • `array_count_values`      | "把数组值作为key，值的出现次数作为value返回新数组"
+                • array array_count_values ( array $array )
+                • params
+                    • array $array => inputArr
+                • return
+                    • array => resArr
+    • 字符串相关函数String Function
+        • `addcslashes` | "以 C 语言风格使用反斜线转义字符串中的字符"
+            • string addcslashes ( string $str , string $charlist )
+        • `addslashes` | "使用反斜线引用字符串"
+            • string addslashes ( string $str )
+        • `bin2hex` | "函数把包含数据的二进制字符串转换为十六进制值"
+            • string bin2hex ( string $str )
+        • `chr` | "返回相对应于 ascii 所指定的单个字符"
+            • string chr ( int $ascii )
+        • `chunk_split` | "将字符串分割成小块"
+            • string chunk_split ( string $body [, int $chunklen = 76 [, string $end = "\r\n" ]] )
+        • `convert_cyr_string` | "将字符由一种 Cyrillic 字符转换成另一种"
+            • string convert_cyr_string ( string $str , string $from , string $to )
+        • `convert_uudecode` | "解码一个 uuencode 编码的字符串"
+            • string convert_uudecode ( string $data )
+        • `convert_uuencode` | "使用 uuencode 编码一个字符串"
+            • string convert_uuencode ( string $data )
+        • `count_chars` | "统计 string 中每个字节值（0..255）出现的次数"
+            • mixed count_chars ( string $string [, int $mode = 0 ] )
+        • `crc32` | "计算一个字符串的 crc32 多项式"
+            • int crc32 ( string $str )
+        • `crypt` | "单向字符串散列"
+            • string crypt ( string $str [, string $salt ] )
+        • `echo` | "输出一个或多个字符串"
+            • void echo ( string $arg1 [, string $... ] )
+            • I have <?=$foo?> foo.
+        • `explode` | "使用一个字符串分割另一个字符串"
+            • array explode ( string $delimiter , string $string [, int $limit ] )
+        • `fprintf` | "将格式化后的字符串写入到流"
+            • int fprintf ( resource $handle , string $format [, mixed $args [, mixed $... ]] )
+        • `get_html_translation_table` | "返回使用 htmlspecialchars() 和 htmlentities() 后的转换表"
+            • array get_html_translation_table ([ int $table = HTML_SPECIALCHARS [, int $flags = ENT_COMPAT | ENT_HTML401 [, string $encoding = 'UTF-8' ]]] )
+        • `hebrev` | "将逻辑顺序希伯来文转换为视觉顺序希伯来文"
+            • string hebrev ( string $hebrew_text [, int $max_chars_per_line = 0 ] )
+        • `hebrevc` | "将逻辑顺序希伯来文（logical-Hebrew）转换为视觉顺序希伯来文（visual-Hebrew），并且转换换行符"
+            • string hebrevc ( string $hebrew_text [, int $max_chars_per_line = 0 ] )
+        • `hex2bin` | "转换十六进制字符串为二进制字符串"
+            • string hex2bin ( string $data )
+        • `html_entity_decode` |
+            • string html_entity_decode ( string $string [, int $flags = ENT_COMPAT | ENT_HTML401 [, string $encoding = ini_get("default_charset") ]] )
+        • `htmlentities` | "将字符转换为 HTML 转义字符"
+            • string htmlentities ( string $string [, int $flags = ENT_COMPAT | ENT_HTML401 [, string $encoding = ini_get("default_charset") [, bool $double_encode = true ]]] )
+        • `htmlspecialchars_decode` | "将特殊的 HTML 实体转换回普通字符"
+            • string htmlspecialchars_decode ( string $string [, int $flags = ENT_COMPAT | ENT_HTML401 ] )
+        • `htmlspecialchars` | "将特殊字符转换为 HTML 实体"
+            • string htmlspecialchars ( string $string [, int $flags = ENT_COMPAT | ENT_HTML401 [, string $encoding = ini_get("default_charset") [, bool $double_encode = true ]]] )
+        • `implode` | "将一个一维数组的值转化为字符串"
+            • string implode ( string $glue , array $pieces )
+            • string implode ( array $pieces )
+            • 别名join()
+        • `lcfirst` | "使一个字符串的第一个字符小写"
+            • string lcfirst ( string $str )
+        • `levenshtein` | "计算两个字符串之间的编辑距离"
+            • int levenshtein ( string $str1 , string $str2 )
+            • int levenshtein ( string $str1 , string $str2 , int $cost_ins , int $cost_rep , int $cost_del )
+        • `localeconv`
+            • array localeconv ( void )
+        • `ltrim` | "删除字符串开头的空白字符（或其他字符）"
+            • string ltrim ( string $str [, string $character_mask ] )
+        • `md5_file` | "计算指定文件的 MD5 散列值"
+            • string md5_file ( string $filename [, bool $raw_output = false ] )
+        • `md5` | "计算字符串的 MD5 散列值"
+            • string md5 ( string $str [, bool $raw_output = false ] )
+        • `metaphone`
+            • string metaphone ( string $str [, int $phonemes = 0 ] )
+        • `money_format` | "将数字格式化成货币字符串"
+            • string money_format ( string $format , float $number )
+        • `nl_langinfo`
+            • string nl_langinfo ( int $item )
+        • `nl2br` | "在字符串所有新行之前插入 HTML 换行标记"
+            • string nl2br ( string $string [, bool $is_xhtml = true ] )
+        • `number_format` | "以千位分隔符方式格式化一个数字"
+            • string number_format ( float $number [, int $decimals = 0 ] )
+            • string number_format ( float $number , int $decimals = 0 , string $dec_point = "." , string $thousands_sep = "," )
+        • `ord` | "返回字符的 ASCII 码值"
+            • int ord ( string $string )
+        • `parse_str` | "将字符串解析成多个变量"
+            • void parse_str ( string $str [, array &$arr ] )
+        • `print` | "输出字符串"
+            • int print ( string $arg )
+        • `printf` | "输出格式化字符串"
+            • int printf ( string $format [, mixed $args [, mixed $... ]] )
+        • `quoted_printable_decode` | "将 quoted-printable 字符串转换为 8-bit 字符串"
+            • string quoted_printable_decode ( string $str )
+        • `quoted_printable_encode` | "将 8-bit 字符串转换成 quoted-printable 字符串"
+            • string quoted_printable_encode ( string $str )
+        • `quotemeta` | "转义元字符集"
+            • string quotemeta ( string $str )
+        • `rtrim` | "删除字符串末端的空白字符（或者其他字符）"
+            • string rtrim ( string $str [, string $character_mask ] )
+            • 别名chop()
+        • `setlocale` | "设置地区信息"
+            • string setlocale ( int $category , string $locale [, string $... ] )
+            • string setlocale ( int $category , array $locale )
+        • `sha1_file` | "计算文件的 sha1 散列值"
+            • string sha1_file ( string $filename [, bool $raw_output = false ] )
+        • `sha1` | "计算字符串的 sha1 散列值"
+            • string sha1 ( string $str [, bool $raw_output = false ] )
+        • `similar_text` | "计算两个字符串的相似度"
+            • int similar_text ( string $first , string $second [, float &$percent ] )
+        • `soundex`
+            • string soundex ( string $str )
+        • `sprintf`
+            • string sprintf ( string $format [, mixed $args [, mixed $... ]] )
+        • `sscanf` | "根据指定格式解析输入的字符"
+            • mixed sscanf ( string $str , string $format [, mixed &$... ] )
+        • `str_getcsv` | "解析 CSV 字符串为一个数组"
+            • array str_getcsv ( string $input [, string $delimiter = "," [, string $enclosure = '"' [, string $escape = "\\" ]]] )
+        • `str_ireplace` | "str_replace() 的忽略大小写版本"
+            • mixed str_ireplace ( mixed $search , mixed $replace , mixed $subject [, int &$count ] )
+        • `str_pad` | "使用另一个字符串填充字符串为指定长度"
+            • string str_pad ( string $input , int $pad_length [, string $pad_string = " " [, int $pad_type = STR_PAD_RIGHT ]] )
+        • `str_repeat` | "重复一个字符串"
+            • string str_repeat ( string $input , int $multiplier )
+        • `str_replace` | "子字符串替换"
+            • mixed str_replace ( mixed $search , mixed $replace , mixed $subject [, int &$count ] )
+        • `str_rot13` | "对字符串执行 ROT13 转换"
+            • string str_rot13 ( string $str )
+        • `str_shuffle` | "随机打乱一个字符串"
+            • string str_shuffle ( string $str )
+        • `str_split` | "将字符串转换为数组"
+            • array str_split ( string $string [, int $split_length = 1 ] )
+        • `str_word_count` | "返回字符串中单词的使用情况"
+            • mixed str_word_count ( string $string [, int $format = 0 [, string $charlist ]] )
+        • `strcasecmp` | "二进制安全比较字符串（不区分大小写）"
+            • int strcasecmp ( string $str1 , string $str2 )
+        • `strcmp` | "二进制安全字符串比较"
+            • int strcmp ( string $str1 , string $str2 )
+        • `strcoll` | "基于区域设置的字符串比较"
+            • int strcoll ( string $str1 , string $str2 )
+        • `strcspn` | "获取不匹配遮罩的起始子字符串的长度"
+            • int strcspn ( string $str1 , string $str2 [, int $start [, int $length ]] )
+        • `strip_tags` | "从字符串中去除 HTML 和 PHP 标记"
+            • string strip_tags ( string $str [, string $allowable_tags ] )
+        • `stripcslashes` | "反引用一个使用 addcslashes() 转义的字符串"
+            • string stripcslashes ( string $str )
+        • `strpos` | "查找字符串首次出现的位置（不区分大小写）"
+            • mixed stripos ( string $haystack , string $needle [, int $offset = 0 ] )
+        • `stripslashes` | "反引用一个引用字符串"
+            • string stripslashes ( string $str )
+        • `stristr` | "strstr() 函数的忽略大小写版本"
+            • string stristr ( string $haystack , mixed $needle [, bool $before_needle = false ] )
+        • `strlen` | "获取字符串长度"
+            • int strlen ( string $string )
+        • `strnatcasecmp` | "使用自然顺序算法比较字符串（不区分大小写）"
+            • int strnatcasecmp ( string $str1 , string $str2 )
+        • `strnatcmp` | "使用自然排序算法比较字符串"
+            • int strnatcmp ( string $str1 , string $str2 )
+        • `strncasecmp` | "二进制安全比较字符串开头的若干个字符（不区分大小写）"
+            • int strncasecmp ( string $str1 , string $str2 , int $len )
+        • `strncmp` | "二进制安全比较字符串开头的若干个字符"
+            • int strncmp ( string $str1 , string $str2 , int $len )
+        • `strpbrk` | "在字符串中查找一组字符的任何一个字符"
+            • string strpbrk ( string $haystack , string $char_list )
+        • `strpos` | "查找字符串首次出现的位置"
+            • mixed strpos ( string $haystack , mixed $needle [, int $offset = 0 ] )
+        • `strrchr` | "查找指定字符在字符串中的最后一次出现"
+            • string strrchr ( string $haystack , mixed $needle )
+        • `strrev` | "反转字符串"
+            • string strrev ( string $string )
+        • `strripos` | "计算指定字符串在目标字符串中最后一次出现的位置（不区分大小写）"
+            • int strripos ( string $haystack , string $needle [, int $offset = 0 ] )
+        • `strrpos` | "计算指定字符串在目标字符串中最后一次出现的位置"
+            • int strrpos ( string $haystack , string $needle [, int $offset = 0 ] )
+        • `strspn` | "计算字符串中全部字符都存在于指定字符集合中的第一段子串的长度。"
+            • int strspn ( string $subject , string $mask [, int $start [, int $length ]] )
+        • `strstr` | "查找字符串的首次出现"
+            • string strstr ( string $haystack , mixed $needle [, bool $before_needle = false ] )
+            • 别名strchr()
+        • `strtok` | "标记分割字符串"
+            • string strtok ( string $str , string $token )
+            • string strtok ( string $token )
+        • `strtolower` | "将字符串转化为小写"
+            • string strtolower ( string $string )
+        • `strtoupper` | "将字符串转化为大写"
+            • string strtoupper ( string $string )
+        • `strtr` | "转换指定字符"
+            • string strtr ( string $str , string $from , string $to )
+            • string strtr ( string $str , array $replace_pairs )
+        • `substr_compare` | "二进制安全比较字符串（从偏移位置比较指定长度）"
+            • int substr_compare ( string $main_str , string $str , int $offset [, int $length [, bool $case_insensitivity = false ]] )
+        • `substr_count` | "计算字串出现的次数"
+            • int substr_count ( string $haystack , string $needle [, int $offset = 0 [, int $length ]] )
+        • `substr_replace` | "替换字符串的子串"
+            • mixed substr_replace ( mixed $string , mixed $replacement , mixed $start [, mixed $length ] )
+        • `substr` | "返回字符串的子串"
+            • string substr ( string $string , int $start [, int $length ] )
+        • `trim` | "去除字符串首尾处的空白字符（或者其他字符）"
+            • string trim ( string $str [, string $character_mask = " \t\n\r\0\x0B" ] )
+        • `ucfirst` | "将字符串的首字母转换为大写"
+            • string ucfirst ( string $str )
+        • `ucwords` | "将字符串中每个单词的首字母转换为大写"
+            • string ucwords ( string $str [, string $delimiters = " \t\r\n\f\v" ] )
+        • `vfprintf` | "将格式化字符串写入流"
+            • int vfprintf ( resource $handle , string $format , array $args )
+        • `vprintf` | "输出格式化字符串"
+            • int vprintf ( string $format , array $args )
+        • `vsprintf` | "返回格式化字符串"
+            • string vsprintf ( string $format , array $args )
+        • `wordwrap` | "打断字符串为指定数量的字串"
+            • string wordwrap ( string $str [, int $width = 75 [, string $break = "\n" [, bool $cut = false ]]] )

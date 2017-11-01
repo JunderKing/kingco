@@ -1,0 +1,17 @@
+• nginx -v
+• nginx -V
+• nginx -t
+• nginx -s reload
+• nginx -s reopen
+• nginx -s stop
+• nginx -s quit
+
+
+
+
+• nginx: [error] open() "/usr/local/var/run/nginx.pid" failed (2: No such file or directory)
+• sudo nginx -c /usr/local/etc/nginx/nginx.conf
+• sudo nginx -s reload
+
+
+• netstat -antl | grep 9000 | '查看端口'

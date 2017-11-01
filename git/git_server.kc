@@ -1,0 +1,45 @@
+###搭建git服务器(centos)
+• 安装git
+    • yum install git | 安装git
+• 创建用户
+    • sudo adduser git | 添加git用户
+    • sudo passwd git | 设置用户密码
+• 禁用用户shell登录
+    • vim /etc/passwd
+    • git:x:501:501::/home/git:/bin/bash -> git:x:501:501::/home/git:/bin/git-shell
+• 初始化裸仓
+    • git init --bare test.git | 初始化git远程仓库
+    • sudo chown -R git:git test.git | 修改远程仓库用户所有权
+• 添加ssh
+    • ssh-keygen -t rsa -C "your_email@example.com" | 生成用户ssh密钥
+        • 密钥默认保存路径为/home/$user/.ssh
+    • 将项目成员的ssh公钥一次存储至/home/git/.ssh/authorized_keys文件中，一行一个
+• 克隆远程仓库
+    • git clone git@serverIp:/path/to/test.git
+• 自动化部署
+    • cd /path/to/test.git/hooks
+    • touch post-receive
+    • vim post-receive
+        | #!/bin/sh
+        | # 删除 GIT_DIR 环境变量，避免干扰
+        | unset GIT_DIR
+        | # 增加生产环境项目路径环境变量
+        | WORKPATH=/path/to/www
+        | # 进入生产目录
+        | cd $WORKPATH
+        | git add . -A && git stash
+        | git pull origin master
+        | echo 'done!!!'
+    • chown -R git:git post-receive
+    • chmod +x post-receive
+    • cd /path/to/www
+    • git clone git@serverIp:/path/to/test.git
+    • 注意
+        • 1. 生产项目目录的所有者需要改为git用户
+        • 2. git用户的ssh密钥也要放入/home/git/.ssh/authorized_keys文件中
+• 授予用户sudo权限
+    • sudo vim /etc/sudoers
+    • root    All=(ALL)    NOPASSWD:ALL
+    • $userName    All=(ALL)    ALL | 如果不需要密码则为NOPASSWD:ALL
+• 连接远程仓库
+    • git push -u origin master

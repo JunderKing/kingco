@@ -1,0 +1,106 @@
+• 第1章 小试牛刀
+    • 1.1 简介
+        • 运行shell脚本
+            • ./script.sh
+                • #!/bin/bash | shebang起始
+            • bash script.sh
+        • ~/.bashrc(~/.bash_profile) | 提示文本，颜色等配置信息
+        • ~/.bash_history | 运行过的命令
+    • 1.2 终端打印
+        • echo $string
+            • 自动添加换行符
+            • 不带引号的字符串不可以打印';'，因被用作命令定界符
+            • 单引号无法进行变量替换
+            • 双引号特殊字符需要转义，如'!'
+            • echo -e "1\t2\t3" | 使用转义序列
+            • echo -n $string | 忽略结尾的换行符
+            • 打印彩色输出
+                • echo -e "\e[1;31m This is red text \e[0m"
+                    • 0=重置,30=黑色,32=红色,32=绿色,33=黄色,34=蓝色,35=洋红,36=青色,37=白色
+                • echo -e "\e[1;42m This is green background \e[0m"
+                    • 0=重置,40=黑色,42=红色,42=绿色,43=黄色,44=蓝色,45=洋红,46=青色,47=白色
+        • printf $string
+            • 换行符如果需要，则手动添加
+            • %-5s => 左对齐(-)宽度为5的字符串，默认右对齐
+            • %-4.2f => 保留两位小数
+    • 1.3 变量和环境变量
+        • evn | 查看所有与终端相关的环境变量
+        • cat /proc/$PID/environ | tr '\0' '\n' | 查看进程运行时的环境变量(默认分隔符替换为换行符)
+        • pgrep $programName | 查看运行程序的PID
+        • var=value | 赋值
+        • value1 = value2 | 相等
+        • export PATH="$PATH:/home/user/bin"
+        • ${#var} | 获取字符串的长度
+        • ${$param:+$expression} | 如果param的值不为空则使用expression的值
+    • 1.5 使用shell进行数学运算
+        • 整数运算
+            • no1=4; no2=5
+            • let result=no1+no2
+            • let no1++
+            • let no1+=6
+            • result=$[no1+no2]
+            • result=$[$no1 + 5]
+            • result=$((no1+50))
+            • result=`expr 3 + 4`
+            • result=$(expr $no1 + 5)
+        • bc
+            • echo "scale=2;8/3" | bc #设置精度
+            • echo "obase=10;ibase=2;$no" | bc #进制转换
+            • echo "sqrt(100)" | bc #平方根
+            • echo "10^10" | bc #平方
+    • 1.6 文件描述符和重定向
+        • 文件描述符
+            • 与文件输入和输相关联的整数
+                • 0 => stdin
+                • 1 => stdout
+                • 2 => stderr
+        • echo $? | 打印退出状态(命令正常运行返回0，错误则返回非0)
+        • 重定向
+            • echo 'hello world' > temp.txt | 覆盖式写入
+            • echo 'hello world' >> temp.txt | 追加式写入
+            • $cmd 2> stderr.txt 1>stdout.txt | 重定向stderr
+            • $cmd 2>&1 output.txt || $cmd &> output.txt
+            • /dev/null | 文件黑洞
+            • /dev/stdin -> stdin; /dev/stderr -> stderr; /dev/stdout -> stdout
+            • cat a* | tee out.txt | cat -n
+                • tee //从标准输入中读取数据，复制一份至文件中
+                • tee -a //追加内容
+                • cat -n //加行号输出
+            • echo who is this | tee - //'-'表示stdin
+            • cat <<EOF ... EOF | heredoc
+    • 1.7 数组和关联数组
+        • 数组
+            • array_var=(1 2 3 4 5) | 数组赋值
+            • array_var[0]='test1' | 数组赋值
+            • array_var[1]='test2' | 数组赋值
+            • echo ${array_var[$index]} | 获取数组某一个元素
+            • echo ${array_var[*]} | 打印数组所有元素
+            • echo ${array_var[@]} | 打印数组所有元素
+            • echo ${#array_var[9]} | 数组长度
+        • 关联数组
+            • declare -A ass_array | 声明变量为关联数组
+            • ass_array=([index1]=value1 [index2]=value2) | 赋值
+            • ass_array[index1]=value1 | 赋值
+            • echo ${!array_var[*]} | 获取数组索引列表
+            • echo ${!array_var[@]} | 获取数组索引列表
+    • 1.8 使用别名
+        • alias $new_command='command sequence'
+        • echo 'alias $cmd="command seq"' >> ~/.bashrc
+        • alias $new_command= 或 unalias
+        • \$cmd | 忽略别名，执行原本命令
+    • 1.9 获取终端信息
+    • 1.10 获取、设置日期和延时
+        • date | 获取日期
+        • date +%s | 设置时间戳
+        • sleep $secods | 延时
+    • 1.11 调试脚本
+        • bash -x script.sh
+    • 1.12 函数和参数
+        • function $funName() {statements;} | 函数声明
+        • $funName() {statements;} | 函数声明
+        • funName [arg1 arg2]; | 函数执行
+        • funName () {echo $1(arg1); echo $2(arg2); echo $@(参数列表); echo $*(类似@)}
+            • $n是第n个参数
+            • $@被扩展为"$1" "$2" "$3"
+            • $*被扩展为"$1c$2c$3"
+        • export -f $funName | 导出函数

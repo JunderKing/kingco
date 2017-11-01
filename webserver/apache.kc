@@ -1,0 +1,4 @@
+• sudo apachectl start/stop/restart
+• curl -I 127.0.0.1:80 '查看服务是否打开'
+• httpd -V | '查看配置文件目录'
+• httpd -k start | '启动apache，如果有错误会报错'

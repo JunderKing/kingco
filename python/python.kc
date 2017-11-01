@@ -1,0 +1,39 @@
+• 安装
+    • ipython 安装 | sudo apt-get install ipython
+    • pip3 安装 | sudo apt-get install python-pip3
+    • pip3安装django | sudo pip3 install django
+        • 卸载 | sudo pip uninstall django
+        • 源码安装
+            • git clone https://github.com/django/django
+            • sudo python3 setup.py install
+    • 安装MySQL驱动 | pip3 install mysqlclient
+• django-admin startproject $projName
+• python3 manage.py startapp [apps.]$appName
+    • 可以在apps目录执行python3 ../manage.py startapp $appName
+• python3 manage.py makemigrations [$appName] | 没有apps.前缀
+• python3 manage.py migrate [$appName]
+• python3 manage.py runserver [127.0.0.1:8000]
+• python3 manage.py createsuperuser
+• 修改apps为搜索路径: sys.path.insert(0, os.path.join(BASE_DIR, 'apps'))
+• settings: LANGUAGE_CODE = 'zh-hans'
+• Directory
+    • manage.py | 管理项目：启动内置web服务器；创建数据库
+    • $projName
+        • setting.py | 配置文件
+        • urls.py | 路由文件
+        • wsgi.py | 与web服务器之间的接口
+        • $appName
+            • views.py | 视图层
+            • models.py | 数据库
+            • admin.py
+            • test.py
+• setting.py -> 
+• pip3 install xadmin | 安装xadmin
+
+###生鲜
+• Django REST framework
+    • 安装
+        • pip3 install djangorestframework
+        • pip3 install markdown
+        • pip3 install django-filter
+• setting.py | database -> mysql

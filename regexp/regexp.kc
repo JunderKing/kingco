@@ -1,0 +1,11 @@
+###正则表达式必知必会
+• Basic metacharacter
+    • >.   | 单个字符
+    • >|   | 逻辑或
+    • >[]  | 集合中的一个字符
+    • >[^] | 对字符集取非
+    • >-   | 定义一个区间
+    • >\   | 转义
+
+• useful regular expressions
+• 

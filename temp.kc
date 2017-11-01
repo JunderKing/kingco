@@ -1,0 +1,3 @@
+###Linux命令
+• file $fileName | MAC查看文件编码
+• iconv -f $fromEncode -t $toEncode $fileName | MAC转换文件编码

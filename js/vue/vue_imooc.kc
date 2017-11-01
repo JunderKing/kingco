@@ -1,0 +1,16 @@
+###vuejs高仿饿了么app
+• 安装
+    • node -v | 查看node版本，v4以上
+    • sudo npm install -g vue-cli | 安装vue_cli
+    • vue list
+    • vue init webpack sell
+        • Project name => sell
+        • Project description => sell app
+        • Author => junderking
+        • Vue build => standalone
+        • Install vue-router => y
+        • Use ESLint => y
+        • Pick an ESLint => standard
+        • Setup unit tests => n
+        • e2e test => n
+        • cd sell -> sudo npm install -> npm run dev
