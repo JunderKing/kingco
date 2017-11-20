@@ -1,11 +1,128 @@
 ###git基本命令
+* 版本控制
+    * 跟踪文本文件的改动，比如txt、网页、程序代码等
+    * 无法跟踪图片、视频、word等二进制文件
+    * 不要使用windows自带的记事本编辑文件，因每个文件头加了0xefbbbf十六进制字符
+* 分布式版本控制VS集中式版本控制
+    * 集中式版本控制：必须联网，提交完整文件，依赖中央服务器，SVN
+    * 分布式版本控制：不需要联网，不依赖中央服务器，安全性高，GIT
+* 安装Git
+    * Linux: sudo apt-get install git
+    * MacOS
+        * brew install git
+        * Xcode: Xcode->Preferences->Downloads->CommandLineTools->install
+* 配置git
+    * --global为对当前用户起作用，如果不加则只对当前仓库起作用
+    * 配置文件在.git/config文件中, 可以直接编辑
+    * git config --global user.name "$name" | 设置提交者的名字
+    * git config --global user.email "$email" | 设置提交者的邮箱
+    * git config --global core.editor $editor | 设置默认编辑器
+    * git config --global color.ui true | 让git输出显示颜色
+    * git config --global merge.tool $tool | 设置解决合并冲突时的差异分析工具
+    * git config --list | 检查已有的配置信息
+    * git config --global alias.$alias '$cmd' | 为git命令设置别名(alias.unstage 'reset HEAD')
+        * git config --global alias.lg "log --color --graph --pretty=format:'%Cred%h%Creset -%C(yellow)%d%Creset %s %Cgreen(%cr) %C(bold blue)<%an>%Creset' --abbrev-commit"
+* 创建版本库
+    * 版本库，又名仓库(repository)，理解为一个目录，目录中所有文件都被git管理
+    * git init [$dirName] | 创建名为$dirName的仓库，默认初始化当前目录为git仓库
+    * 创建成功后有一个.git隐藏目录
+        * .git目录为版本库，存了很多东西，包括暂存区(stage/index)和分支(master等)
+* 提交版本
+    * git add ./$fileName | 把工作区修改提交到暂存区
+    * git rm $fileName | 删除工作区的文件并提交至暂存区
+        * 等同于先删除文件，再git add $fileName
+    * git commit -m '$comment' | 把暂存区的所有内容提交至当前分支
+* 查看状态
+    * git status
+    * git diff
+    * git diff HEAD -- ./$filename | 查看工作区和版本库的区别
+* 撤销修改
+    * git checkout [--] ./$filename | 丢弃工作区的修改
+        * 相当于撤销了最后一次add之后所有的修改
+        * 没有--可能变成切换分支操作
+    * git reset HEAD [$fileName] | 丢弃暂存区的修改(不会覆盖回工作区)
+        * 相当于撤销了最后一次commit之后的所有add操作
+        * 如果把HEAD改为HEAD^则会同时回退分支的内容，不影响工作区
+* 版本回退
+    * git log [--pretty=oneline] | 当前分支的commit记录
+        * git log --graph | 显示分支合并情况
+    * git reset --hard $commit_id | 丢弃工作区和暂存区的修改，回到制定$commitId的版本
+        * 相当于撤销指定commit之后的所有add和修改操作
+        * HEAD => 当前版本
+        * HEAD^ <=> HEAD~1 => 上一个版本
+        * HEAD^^ <=> HEAD~2 => 上上个版本
+        * HEAD~100 => 往上100个版本
+    * git reflog | 查看提交和回退记录
+* 创建git账号
+    * ssh-keygen -t rsa -C '$email' | 生成SSH key(.ssh目录下id_rsa和id_rsa.pub)
+    * pbcopy < id_rsa.pub, 拷贝至github->AccountSettings->SSH keys->AddKey
+    * 只有公钥对应的电脑才可以提交修改
+* 远程仓库
+    * git remote add origin $address
+        * git remote add $repoName $address | 自定义远程仓库名称(github/gitee/gitlab)
+        * git push $repoName $branch | 推送时选择相应仓库
+    * git remote [-v] | 查看远程仓库[更详细的]信息
+        * -v 显示抓取和推送的地址
+    * git remote rm origin | 删除远程仓库
+* 推送
+    * git push [-u] origin master | 将本地master分支的内容推送至远程库上
+        * 第一次推送需要加-u参数，关联本地master分支和远程master分支
+        * 第一次clone或者push到github时会警告，yes之后加入到known_hosts
+    * git clone $address [$fileName] | 克隆远程分支至本地
+* 分支
+    * git checkout -b $branch | 创建并切换至新分支
+        * 相当于git branch $branch && git checkout $branch
+    * git branch | 查看当前分支
+        * 列出所有本地分支，当前分支前带有*号
+    * git checkout $branch | 切换分支
+    * git merge $branch | 合并指定分支到当前分支
+        * git merge --no-ff -m '$comment' $branch | 禁用fast foward合并方式，创建新的commit
+    * git branch -d $branch | 删除分支
+        * git branch -D $branch | 删除未合并的分支
+* 储存工作区(Bug修复)
+    * git stash | 储存工作区
+    * git stash list | 查看stash列表
+    * git stash apply | 恢复stash内容
+        * git stash apply stash@{$number} | 恢复特定stash内容
+    * git stash drop | 删除stash内容
+    * git stash pop | 恢复并删除stash内容
+* 多人协作
+    * 远程仓库默认名称是origin
+    * git push origin $branch | 推送分支
+        * 推送时要指定本地分支
+    * git checkout -b $branch origin/$branch | 创建本地分支并和远程分支关联
+    * git branch --set-upstream $branch origin/$branch | 关联本地分支和远程分支
+    * git pull | 拉取远程分支
+* 标签管理
+    * git tag $tag [$commitId] | 为当前分支的指定commit创建标签
+        * git tag -a $tag -m '$comment' [$commitId] | 创建带有说明的标签
+    * git tag | 查看标签列表
+    * git show $tag | 查看标签信息
+    * git tag -d $tag | 删除标签
+    * git push origin $tag | 推送标签至远端
+        * git push origin --tags | 推送所有标签至远端
+    * git push origin :refs/tags/$tag | 删除远端标签
+* 修改开源项目
+    * 项目主页 -> Fork -> clone自己fork的仓库 -> pull/push -> 发起pull request -> 等待同意
+* gitignore
+    * .gitignore文件 | 忽略特定文件，放在git目录里
+        * 比如 *.swp忽略vim的buffer文件, #号为注释
+    * git add -f $fileName | 无视gitignore，强制添加
+    * git check-ignore $fileName | 查看文件被那一条规则ignore
+
+
+
+
+
+
+
 • 初始化操作
     • git config --global user.name $name | 设置提交者名字
     • git config --global user.email $email | 设置提交者邮箱
     • git config --global core.editor $editor | 设置默认编辑器
     • git config --global merge.tool $tool | 设置解决合并冲突时的差异分析工具
     • git config --list | 检查已有的配置信息
-• 穿件新版本库
+• 创建新版本库
     • git clone $url | 克隆远程版本库
     • git init | 初始化本地版本库
 • 修改和提交

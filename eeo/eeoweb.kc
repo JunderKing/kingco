@@ -17,7 +17,23 @@
         • passwd: Jun.k140625
     • e-mail
         • account: daqing.jiang@eeoa.com
-        • passwd: Qa1278
+        • passwd: Jun.k140625
     • sourceTree
         • account: daqing.jiang@eeoa.com
         • passwd: youxiwang
+    * qcloud
+        * account: 2442788367
+        * passwd: EEoa123456
+log
+modified:   action/classin/UpdateStudentCommentAction.php
+modified:   action/classin/UpdateTeacherCommentAction.php
+modified:   action/publicNotice/AddPublicNoticeAction.php
+modified:   action/webcast/CheckLoginAction.php
+modified:   action/webcast/CheckSchoolUrlAction.php
+modified:   action/webcast/VerifyLoginAction.php
+action/question/AddQuestionAction.php
+action/question/AnswerQuestionAction.php
+action/questioin/SysAddQuestionAction.php
+action/questioin/SysAnswerQuestionAction.php
+action/questioin/SysReadQuestionAction.php
+import/phpExcel/PHPExcel/Calculation.php

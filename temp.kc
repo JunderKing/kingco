@@ -1,3 +1,8 @@
 ###Linux命令
 • file $fileName | MAC查看文件编码
 • iconv -f $fromEncode -t $toEncode $fileName | MAC转换文件编码
+
+###git命令
+* git branch -a | 查看远程分支
+* git branch | 查看本地分支
+* git checkout origin/$remoteName -b $localName | 拉去远程分支至本地分支

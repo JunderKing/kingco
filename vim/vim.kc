@@ -1,1 +1,4 @@
+修改json.vim，避免双引号被隐藏
+MacVim->Contents->Resources->vim->runtime->syntax->json.vim
 # Plugin
+
