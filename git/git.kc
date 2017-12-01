@@ -21,7 +21,7 @@
     * git config --global merge.tool $tool | 设置解决合并冲突时的差异分析工具
     * git config --list | 检查已有的配置信息
     * git config --global alias.$alias '$cmd' | 为git命令设置别名(alias.unstage 'reset HEAD')
-        * git config --global alias.lg "log --color --graph --pretty=format:'%Cred%h%Creset -%C(yellow)%d%Creset %s %Cgreen(%cr) %C(bold blue)<%an>%Creset' --abbrev-commit"
+    * git config --global alias.lg "log --color --graph --pretty=format:'%Cred%h%Creset -%C(yellow)%d%Creset %s %Cgreen(%cr) %C(bold blue)<%an>%Creset' --abbrev-commit"
 * 创建版本库
     * 版本库，又名仓库(repository)，理解为一个目录，目录中所有文件都被git管理
     * git init [$dirName] | 创建名为$dirName的仓库，默认初始化当前目录为git仓库
@@ -74,6 +74,7 @@
         * 相当于git branch $branch && git checkout $branch
     * git branch | 查看当前分支
         * 列出所有本地分支，当前分支前带有*号
+    * git branch -vv | 查看本地分支和远程分支的对应
     * git checkout $branch | 切换分支
     * git merge $branch | 合并指定分支到当前分支
         * git merge --no-ff -m '$comment' $branch | 禁用fast foward合并方式，创建新的commit
